@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "clear-life",
+  "compatibility_date": "2026-07-25",
+  "assets": {
+    "directory": "dist/clear-life/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
