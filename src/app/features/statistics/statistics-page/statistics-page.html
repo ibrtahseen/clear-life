@@ -1,0 +1,70 @@
+<div class="statistics">
+  <h1>{{ 'statistics.title' | translate }}</h1>
+
+  @if (stats(); as data) {
+    <div class="statistics__stat-grid">
+      <div class="statistics__stat-card">
+        <span class="statistics__stat-value">{{ data.prayerStreak.current }}</span>
+        <span class="statistics__stat-label">{{ 'statistics.prayerStreak' | translate }}</span>
+      </div>
+      <div class="statistics__stat-card">
+        <span class="statistics__stat-value">{{ data.bestCurrent }}</span>
+        <span class="statistics__stat-label">{{ 'statistics.habitStreak' | translate }}</span>
+      </div>
+      <div class="statistics__stat-card">
+        <span class="statistics__stat-value">{{ data.bestLongest }}</span>
+        <span class="statistics__stat-label">{{ 'statistics.longestStreak' | translate }}</span>
+      </div>
+      <div class="statistics__stat-card">
+        <span class="statistics__stat-value">{{ data.quranPages }}</span>
+        <span class="statistics__stat-label">{{ 'statistics.quranPagesRead' | translate }}</span>
+      </div>
+    </div>
+
+    <div class="statistics__chart-grid">
+      <section class="statistics__chart-card">
+        <h2>{{ 'dashboard.weeklyCompletion' | translate }}</h2>
+        <div class="statistics__chart-wrap">
+          @if (weeklyChartData(); as chartData) {
+            <canvas baseChart [type]="'bar'" [data]="chartData" [options]="chartOptions"></canvas>
+          }
+        </div>
+      </section>
+
+      <section class="statistics__chart-card">
+        <h2>{{ 'statistics.monthlyCompletion' | translate }}</h2>
+        <div class="statistics__chart-wrap">
+          @if (monthlyChartData(); as chartData) {
+            <canvas baseChart [type]="'bar'" [data]="chartData" [options]="chartOptions"></canvas>
+          }
+        </div>
+      </section>
+
+      <section class="statistics__chart-card">
+        <h2>{{ 'statistics.categoryDistribution' | translate }}</h2>
+        <div class="statistics__chart-wrap">
+          @if (categoryChartData(); as chartData) {
+            <canvas baseChart [type]="'doughnut'" [data]="chartData" [options]="doughnutOptions"></canvas>
+          } @else {
+            <p class="statistics__empty">{{ 'statistics.noData' | translate }}</p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="statistics__heatmap-card">
+      <h2>{{ 'statistics.dailyHeatmap' | translate }}</h2>
+      <div class="statistics__heatmap">
+        @for (day of data.heatmap; track day.date) {
+          <span
+            class="statistics__heatmap-cell"
+            [class]="heatmapCellClass(day.rate)"
+            [title]="day.date + ': ' + day.rate + '%'"
+          ></span>
+        }
+      </div>
+    </section>
+  } @else {
+    <p class="statistics__empty">{{ 'common.loading' | translate }}</p>
+  }
+</div>

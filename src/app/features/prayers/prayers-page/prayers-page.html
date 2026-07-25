@@ -1,0 +1,74 @@
+<div class="prayers">
+  <h1>{{ 'prayers.title' | translate }}</h1>
+
+  @if (error() === 'no-location') {
+    <app-inline-message severity="warn">
+      {{ 'prayers.noLocation' | translate }}
+      <a routerLink="/settings">{{ 'prayers.goToSettings' | translate }}</a>
+    </app-inline-message>
+  } @else if (error() === 'fetch-failed') {
+    <app-inline-message severity="warn">{{ 'prayers.fetchFailed' | translate }}</app-inline-message>
+  }
+
+  @if (nextPrayer(); as next) {
+    <section class="prayers__countdown">
+      <span class="prayers__countdown-label">{{ 'prayers.nextPrayer' | translate }}</span>
+      <span class="prayers__countdown-name">{{ 'prayers.' + next.name | translate }}</span>
+      <span class="prayers__countdown-time">{{ countdownLabel() }}</span>
+    </section>
+  }
+
+  <section class="prayers__list">
+    @for (name of prayerNames; track name) {
+      <article class="prayers__card">
+        <div class="prayers__info">
+          <h3>{{ 'prayers.' + name | translate }}</h3>
+          <div class="prayers__meta">
+            @if (schedule(); as s) {
+              <span class="prayers__time">{{ formattedTime(s.times[name]) }}</span>
+            } @else if (loading()) {
+              <span class="prayers__time">{{ 'common.loading' | translate }}</span>
+            }
+            @if (pageRangeLabel(name); as range) {
+              <button type="button" class="prayers__quran-chip" (click)="openReader(name)">
+                <mat-icon>menu_book</mat-icon>
+                {{ 'prayers.pages' | translate }} {{ range }}
+              </button>
+            }
+          </div>
+        </div>
+        <button
+          type="button"
+          class="prayers__toggle"
+          [class.prayers__toggle--done]="isCompleted(name)"
+          [attr.aria-label]="'prayers.toggleCompletion' | translate"
+          [title]="'prayers.toggleCompletionHint' | translate: { range: pageRangeLabel(name) }"
+          (click)="toggle(name)"
+        >
+          @if (isCompleted(name)) {
+            <mat-icon>check</mat-icon>
+          }
+        </button>
+      </article>
+    }
+  </section>
+
+  @if (error()) {
+    <button mat-stroked-button type="button" (click)="refreshLocation()">
+      {{ 'common.retry' | translate }}
+    </button>
+  }
+
+  <section class="prayers__quran">
+    <div class="prayers__quran-icon"><mat-icon>menu_book</mat-icon></div>
+    <div>
+      <h3>{{ 'prayers.quranProgress' | translate }}</h3>
+      <p>{{ 'prayers.currentPage' | translate }}: {{ quranRangeLabel() }}</p>
+      @if (quranProgress().completions > 0) {
+        <p class="prayers__quran-completions">
+          {{ 'prayers.khatmCompleted' | translate: { count: quranProgress().completions } }}
+        </p>
+      }
+    </div>
+  </section>
+</div>

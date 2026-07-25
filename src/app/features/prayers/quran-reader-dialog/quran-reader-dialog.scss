@@ -1,0 +1,80 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 32rem;
+}
+
+.quran-reader {
+  min-height: 20rem;
+  max-height: 60vh;
+}
+
+.quran-reader__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+}
+
+.quran-reader__mushaf {
+  direction: rtl;
+  text-align: center;
+  padding: 1rem 0.5rem;
+  margin-bottom: 1.25rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent);
+}
+
+.quran-reader__line {
+  font-family: 'Amiri Quran', 'Traditional Arabic', serif;
+  font-size: 1.6rem;
+  line-height: 2.4;
+  margin: 0;
+  color: var(--mat-sys-on-surface);
+}
+
+.quran-reader__translations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quran-reader__surah-name {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 0.95rem;
+  color: var(--mat-sys-primary);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.quran-reader__verse {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.quran-reader__verse-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-inline-end: 0.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+  color: var(--mat-sys-primary);
+}
+
+.quran-reader__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}

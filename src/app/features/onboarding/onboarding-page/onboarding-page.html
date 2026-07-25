@@ -1,0 +1,134 @@
+<div class="onboarding">
+  <div class="onboarding__card">
+    <header class="onboarding__header">
+      <p class="onboarding__brand">Clear Life</p>
+      <p class="onboarding__slogan">{{ 'app.slogan' | translate }}</p>
+      <div class="onboarding__progress">
+        <div class="onboarding__progress-fill" [style.width.%]="progress()"></div>
+      </div>
+    </header>
+
+    <section class="onboarding__step">
+      @switch (step()) {
+        @case (0) {
+          <h2>{{ 'onboarding.nameTitle' | translate }}</h2>
+          <p class="onboarding__hint">{{ 'onboarding.nameHint' | translate }}</p>
+          <mat-form-field class="onboarding__field" appearance="outline">
+            <input
+              matInput
+              [formField]="onboardingForm.name"
+              [placeholder]="'onboarding.namePlaceholder' | translate"
+              (keydown.enter)="canContinue() && next()"
+            />
+            @if (onboardingForm.name().touched() && !onboardingForm.name().valid()) {
+              <mat-error>{{ 'onboarding.nameRequired' | translate }}</mat-error>
+            }
+          </mat-form-field>
+        }
+        @case (1) {
+          <h2>{{ 'onboarding.languageTitle' | translate }}</h2>
+          <p class="onboarding__hint">{{ 'onboarding.languageHint' | translate }}</p>
+          <mat-button-toggle-group [formField]="onboardingForm.language">
+            @for (option of languageOptions; track option.value) {
+              <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        }
+        @case (2) {
+          <h2>{{ 'onboarding.themeTitle' | translate }}</h2>
+          <p class="onboarding__hint">{{ 'onboarding.themeHint' | translate }}</p>
+          <div class="onboarding__theme-grid">
+            @for (option of themeOptions; track option.value) {
+              <button
+                type="button"
+                class="onboarding__theme-option"
+                [class.onboarding__theme-option--active]="isThemeSelected(option.value)"
+                (click)="setTheme(option.value)"
+              >
+                <mat-icon>{{ option.icon }}</mat-icon>
+                <span>{{ option.label }}</span>
+              </button>
+            }
+          </div>
+        }
+        @case (3) {
+          <h2>{{ 'onboarding.locationTitle' | translate }}</h2>
+          <p class="onboarding__hint">{{ 'onboarding.locationHint' | translate }}</p>
+
+          <div class="onboarding__location-tabs">
+            <button
+              type="button"
+              class="onboarding__theme-option"
+              [class.onboarding__theme-option--active]="locationMode() === 'gps'"
+              (click)="useGps()"
+            >
+              <mat-icon>location_on</mat-icon>
+              <span>{{ 'onboarding.useGps' | translate }}</span>
+            </button>
+            <button
+              type="button"
+              class="onboarding__theme-option"
+              [class.onboarding__theme-option--active]="locationMode() === 'manual'"
+              (click)="useManualEntry()"
+            >
+              <mat-icon>apartment</mat-icon>
+              <span>{{ 'onboarding.useCity' | translate }}</span>
+            </button>
+          </div>
+
+          @if (locationMode() === 'gps') {
+            @if (locatingGps()) {
+              <div class="onboarding__gps-status">
+                <mat-progress-spinner diameter="24" strokeWidth="3" mode="indeterminate" />
+                <span>{{ 'onboarding.locating' | translate }}</span>
+              </div>
+            } @else if (gpsCoords()) {
+              <app-inline-message severity="success">{{ 'onboarding.gpsFound' | translate }}</app-inline-message>
+            } @else if (gpsError()) {
+              <app-inline-message severity="warn">{{ 'onboarding.gpsDenied' | translate }}</app-inline-message>
+            }
+          } @else {
+            <mat-form-field class="onboarding__field" appearance="outline">
+              <input
+                matInput
+                [matAutocomplete]="cityAuto"
+                [placeholder]="'onboarding.cityPlaceholder' | translate"
+                (input)="searchCities($any($event.target).value)"
+              />
+              <mat-autocomplete #cityAuto="matAutocomplete" [displayWith]="cityDisplayFn" (optionSelected)="onCitySelected($event)">
+                @for (city of citySuggestions(); track city.city) {
+                  <mat-option [value]="city">{{ city.city }}, {{ city.country }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+          }
+        }
+        @case (4) {
+          <h2>{{ 'onboarding.weekTitle' | translate }}</h2>
+          <p class="onboarding__hint">{{ 'onboarding.weekHint' | translate }}</p>
+          <mat-button-toggle-group [formField]="onboardingForm.firstDayOfWeek">
+            @for (option of weekDayOptions; track option.value) {
+              <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        }
+      }
+    </section>
+
+    <footer class="onboarding__footer">
+      @if (step() > 0) {
+        <button mat-button type="button" [disabled]="saving()" (click)="back()">
+          {{ 'common.back' | translate }}
+        </button>
+      } @else {
+        <span></span>
+      }
+      <button mat-flat-button type="button" [disabled]="!canContinue() || saving()" (click)="next()">
+        @if (saving()) {
+          <mat-progress-spinner diameter="16" strokeWidth="2" mode="indeterminate" />
+        }
+        {{ (step() === totalSteps - 1 ? 'onboarding.getStarted' : 'common.next') | translate }}
+      </button>
+    </footer>
+  </div>
+</div>

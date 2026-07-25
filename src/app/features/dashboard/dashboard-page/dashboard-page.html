@@ -1,0 +1,115 @@
+<div class="dashboard">
+  <header class="dashboard__greeting">
+    <h1>{{ greetingKey() | translate: { name: userName() } }}</h1>
+    <p class="dashboard__dates">{{ today | date: 'EEEE, MMMM d, y' }} &middot; {{ hijriDate }}</p>
+  </header>
+
+  @if (nextPrayer(); as next) {
+    <section class="dashboard__countdown">
+      <span class="dashboard__countdown-label">{{ 'prayers.nextPrayer' | translate }}</span>
+      <span class="dashboard__countdown-name">{{ 'prayers.' + next.name | translate }}</span>
+      <span class="dashboard__countdown-time">{{ formattedTime(next.time) }}</span>
+    </section>
+  }
+
+  <div class="dashboard__grid">
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.todaysPrayers' | translate }}</h2>
+      <div class="dashboard__prayer-row">
+        @for (name of prayerNames; track name) {
+          <button
+            type="button"
+            class="dashboard__prayer-pill"
+            [class.dashboard__prayer-pill--done]="isPrayerCompleted(name)"
+            (click)="togglePrayer(name)"
+          >
+            {{ 'prayers.' + name | translate }}
+          </button>
+        }
+      </div>
+      <a routerLink="/prayers" class="dashboard__link">{{ 'dashboard.viewAll' | translate }}</a>
+    </section>
+
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.todaysHabits' | translate }}</h2>
+      @if (todaysHabits().length === 0) {
+        <p class="dashboard__empty">{{ 'dashboard.noHabitsToday' | translate }}</p>
+      } @else {
+        <div class="dashboard__habit-list">
+          @for (habit of todaysHabits(); track habit.id) {
+            <button
+              type="button"
+              class="dashboard__habit-pill"
+              [class.dashboard__habit-pill--done]="isHabitCompleted(habit.id!)"
+              [style.borderColor]="habit.color"
+              (click)="toggleHabit(habit.id!)"
+            >
+              <mat-icon>{{ habit.icon }}</mat-icon>
+              {{ habit.title }}
+            </button>
+          }
+        </div>
+      }
+      <a routerLink="/habits" class="dashboard__link">{{ 'dashboard.viewAll' | translate }}</a>
+    </section>
+
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.weeklyCompletion' | translate }}</h2>
+      @if (weeklyStats(); as stats) {
+        <div class="dashboard__stat-row">
+          <span>{{ 'habits.title' | translate }}</span>
+          <span>{{ stats.habit.rate }}%</span>
+        </div>
+        <div class="dashboard__stat-row">
+          <span>{{ 'prayers.title' | translate }}</span>
+          <span>{{ stats.prayer.rate }}%</span>
+        </div>
+      } @else {
+        <p class="dashboard__empty">{{ 'common.loading' | translate }}</p>
+      }
+    </section>
+
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.currentStreak' | translate }}</h2>
+      @if (prayerStreak(); as streak) {
+        <div class="dashboard__streak">
+          <span class="dashboard__streak-value">{{ streak.current }}</span>
+          <span class="dashboard__streak-label">{{ 'dashboard.dayStreak' | translate }}</span>
+        </div>
+      }
+    </section>
+
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.quranProgress' | translate }}</h2>
+      <p class="dashboard__quran-page">{{ quranRangeLabel() }}</p>
+      <p class="dashboard__empty">{{ 'prayers.currentPage' | translate }}</p>
+    </section>
+
+    <section class="dashboard__card">
+      <h2>{{ 'dashboard.upcomingReminders' | translate }}</h2>
+      @if (upcomingReminders().length === 0) {
+        <p class="dashboard__empty">{{ 'dashboard.noReminders' | translate }}</p>
+      } @else {
+        @for (habit of upcomingReminders(); track habit.id) {
+          <div class="dashboard__reminder-row">
+            <mat-icon [style.color]="habit.color">{{ habit.icon }}</mat-icon>
+            <span>{{ habit.title }}</span>
+            <span class="dashboard__reminder-time">{{ formattedTime(habit.reminderTime!) }}</span>
+          </div>
+        }
+      }
+    </section>
+  </div>
+
+  <section class="dashboard__quick-actions">
+    <a routerLink="/habits" class="dashboard__quick-action"
+      ><mat-icon>add</mat-icon> {{ 'dashboard.addHabit' | translate }}</a
+    >
+    <a routerLink="/statistics" class="dashboard__quick-action"
+      ><mat-icon>bar_chart</mat-icon> {{ 'nav.statistics' | translate }}</a
+    >
+    <a routerLink="/calendar" class="dashboard__quick-action"
+      ><mat-icon>calendar_month</mat-icon> {{ 'nav.calendar' | translate }}</a
+    >
+  </section>
+</div>

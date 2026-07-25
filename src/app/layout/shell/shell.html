@@ -1,0 +1,35 @@
+<div class="shell">
+  <header class="shell__topbar">
+    <div class="shell__brand">
+      <span class="shell__brand-name">Clear Life</span>
+      @if (greetingName()) {
+        <span class="shell__greeting">{{ 'nav.greeting' | translate: { name: greetingName() } }}</span>
+      }
+    </div>
+    <a routerLink="/settings" class="shell__settings-link" [attr.aria-label]="'nav.settings' | translate">
+      <mat-icon>settings</mat-icon>
+    </a>
+  </header>
+
+  <nav class="shell__rail" aria-label="Primary">
+    @for (item of navItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="shell__rail-item--active" class="shell__rail-item">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.labelKey | translate }}</span>
+      </a>
+    }
+  </nav>
+
+  <main class="shell__content">
+    <router-outlet />
+  </main>
+
+  <nav class="shell__tabbar" aria-label="Primary">
+    @for (item of navItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="shell__tabbar-item--active" class="shell__tabbar-item">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.labelKey | translate }}</span>
+      </a>
+    }
+  </nav>
+</div>

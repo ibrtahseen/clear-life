@@ -1,0 +1,180 @@
+:host {
+  display: block;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.dashboard__greeting {
+  margin-bottom: 1.25rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.dashboard__dates {
+  margin: 0.25rem 0 0;
+  opacity: 0.65;
+  font-size: 0.85rem;
+}
+
+.dashboard__countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1.5rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 22px;
+  text-align: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--mat-sys-primary) 20%, transparent), transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.dashboard__countdown-label {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashboard__countdown-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.dashboard__countdown-time {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
+
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard__card {
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+.dashboard__empty {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.dashboard__prayer-row,
+.dashboard__habit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.dashboard__prayer-pill,
+.dashboard__habit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: transparent;
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &--done {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.dashboard__link {
+  font-size: 0.8rem;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+}
+
+.dashboard__stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.dashboard__streak {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.dashboard__streak-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
+
+.dashboard__streak-label {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+
+.dashboard__quran-page {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+  margin: 0;
+}
+
+.dashboard__reminder-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
+}
+
+.dashboard__reminder-time {
+  margin-inline-start: auto;
+  opacity: 0.6;
+}
+
+.dashboard__quick-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dashboard__quick-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+  font-size: 0.85rem;
+}

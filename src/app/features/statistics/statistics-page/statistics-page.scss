@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 1.25rem;
+  font-size: 1.4rem;
+}
+
+.statistics__empty {
+  opacity: 0.6;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.statistics__stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.statistics__stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 1rem 0.5rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.statistics__stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
+
+.statistics__stat-label {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  text-align: center;
+}
+
+.statistics__chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.statistics__chart-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+.statistics__chart-wrap {
+  position: relative;
+  height: 220px;
+}
+
+.statistics__heatmap-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+.statistics__heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16px, 1fr));
+  gap: 4px;
+}
+
+.statistics__heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+
+  &.heat-0 {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  }
+  &.heat-1 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 25%, transparent);
+  }
+  &.heat-2 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 50%, transparent);
+  }
+  &.heat-3 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 75%, transparent);
+  }
+  &.heat-4 {
+    background: var(--mat-sys-primary);
+  }
+}

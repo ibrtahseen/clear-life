@@ -1,0 +1,77 @@
+<h2 mat-dialog-title>{{ (habitToEdit ? 'habits.editTitle' : 'habits.addTitle') | translate }}</h2>
+
+<mat-dialog-content class="habit-form">
+  <mat-form-field class="habit-form__field" appearance="outline">
+    <mat-label>{{ 'habits.titleLabel' | translate }}</mat-label>
+    <input matInput [formField]="habitForm.title" [placeholder]="'habits.titlePlaceholder' | translate" />
+  </mat-form-field>
+
+  <span class="habit-form__label">{{ 'habits.iconLabel' | translate }}</span>
+  <div class="habit-form__swatches">
+    @for (icon of icons; track icon) {
+      <button
+        type="button"
+        class="habit-form__icon-swatch"
+        [class.habit-form__icon-swatch--active]="selectedIcon() === icon"
+        [attr.aria-label]="icon"
+        (click)="selectedIcon.set(icon)"
+      >
+        <mat-icon>{{ icon }}</mat-icon>
+      </button>
+    }
+  </div>
+
+  <span class="habit-form__label">{{ 'habits.colorLabel' | translate }}</span>
+  <div class="habit-form__swatches">
+    @for (color of colors; track color) {
+      <button
+        type="button"
+        class="habit-form__color-swatch"
+        [class.habit-form__color-swatch--active]="selectedColor() === color"
+        [style.background]="color"
+        [attr.aria-label]="color"
+        (click)="selectedColor.set(color)"
+      ></button>
+    }
+  </div>
+
+  <mat-form-field class="habit-form__field" appearance="outline">
+    <mat-label>{{ 'habits.categoryLabel' | translate }}</mat-label>
+    <mat-select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
+      @for (option of categoryOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <span class="habit-form__label">{{ 'habits.scheduleLabel' | translate }}</span>
+  <div class="habit-form__weekdays">
+    @for (day of weekDays; track day.value) {
+      <button
+        type="button"
+        class="habit-form__weekday"
+        [class.habit-form__weekday--active]="isDaySelected(day.value)"
+        (click)="toggleDay(day.value)"
+      >
+        {{ day.label }}
+      </button>
+    }
+  </div>
+
+  <label class="habit-form__label" for="habit-reminder">{{ 'habits.reminderLabel' | translate }}</label>
+  <input id="habit-reminder" type="time" class="habit-form__time" [formField]="habitForm.reminderTime" />
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">
+    {{ 'common.cancel' | translate }}
+  </button>
+  <button
+    mat-flat-button
+    type="button"
+    [disabled]="!habitForm().valid() || selectedSchedule().length === 0 || saving()"
+    (click)="save()"
+  >
+    {{ 'common.save' | translate }}
+  </button>
+</mat-dialog-actions>

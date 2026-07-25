@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>
+  {{ 'prayers.' + data.prayerName | translate }} &middot; {{ 'quran.page' | translate }} {{ currentPage() }}
+</h2>
+
+<mat-dialog-content class="quran-reader">
+  @if (loading()) {
+    <div class="quran-reader__loading">
+      <mat-progress-spinner diameter="36" strokeWidth="3" mode="indeterminate" />
+    </div>
+  } @else if (error()) {
+    <app-inline-message severity="warn">{{ 'quran.loadFailed' | translate }}</app-inline-message>
+    <button mat-stroked-button type="button" (click)="loadPage(currentPage())">
+      {{ 'common.retry' | translate }}
+    </button>
+  } @else {
+    <div class="quran-reader__mushaf">
+      @for (line of lines(); track line.lineNumber) {
+        <p class="quran-reader__line">{{ line.text }}</p>
+      }
+    </div>
+
+    <div class="quran-reader__translations">
+      @for (verse of verses(); track verse.verseKey) {
+        @if (verse.isFirstOfSurah) {
+          <h3 class="quran-reader__surah-name">{{ verse.surahName }}</h3>
+        }
+        <p class="quran-reader__verse">
+          <span class="quran-reader__verse-number">{{ verse.ayah }}</span>
+          {{ verse.translation }}
+        </p>
+      }
+    </div>
+  }
+</mat-dialog-content>
+
+<div class="quran-reader__pager">
+  <button mat-icon-button type="button" [disabled]="!canGoPrev()" [attr.aria-label]="'common.previous' | translate" (click)="prevPage()">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <span>{{ 'quran.pageOf' | translate: { current: pageIndex() + 1, total: data.pages.length } }}</span>
+  <button mat-icon-button type="button" [disabled]="!canGoNext()" [attr.aria-label]="'common.next' | translate" (click)="nextPage()">
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">{{ 'common.close' | translate }}</button>
+  @if (!data.alreadyCompleted) {
+    <button mat-flat-button type="button" [disabled]="marking()" (click)="markAsReadAndPrayed()">
+      {{ 'quran.markReadAndPrayed' | translate }}
+    </button>
+  }
+</mat-dialog-actions>

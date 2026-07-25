@@ -1,0 +1,164 @@
+<div class="settings">
+  <h1>{{ 'settings.title' | translate }}</h1>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.appearance' | translate }}</h2>
+    <div class="settings__option-grid">
+      @for (option of themeOptions; track option.value) {
+        <button
+          type="button"
+          class="settings__option"
+          [class.settings__option--active]="settings().theme === option.value"
+          (click)="setTheme(option.value)"
+        >
+          <mat-icon>{{ option.icon }}</mat-icon>
+          <span>{{ option.label }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.language' | translate }}</h2>
+    <mat-button-toggle-group [ngModel]="settings().language" (ngModelChange)="setLanguage($event)">
+      @for (option of languageOptions; track option.value) {
+        <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.user' | translate }}</h2>
+    <div class="settings__row">
+      <mat-form-field class="settings__field" appearance="outline">
+        <input
+          matInput
+          [formField]="nameForm.name"
+          (input)="nameDirty.set(true)"
+          [placeholder]="'settings.namePlaceholder' | translate"
+        />
+      </mat-form-field>
+      <button
+        mat-flat-button
+        type="button"
+        [disabled]="!nameForm.name().valid() || !nameDirty()"
+        (click)="saveName()"
+      >
+        {{ 'common.save' | translate }}
+      </button>
+    </div>
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.prayerLocation' | translate }}</h2>
+    <div class="settings__option-grid settings__option-grid--two">
+      <button
+        type="button"
+        class="settings__option"
+        [class.settings__option--active]="locationMode() === 'gps'"
+        (click)="useGps()"
+      >
+        <mat-icon>location_on</mat-icon>
+        <span>{{ 'onboarding.useGps' | translate }}</span>
+      </button>
+      <button
+        type="button"
+        class="settings__option"
+        [class.settings__option--active]="locationMode() === 'manual'"
+        (click)="useManualEntry()"
+      >
+        <mat-icon>apartment</mat-icon>
+        <span>{{ 'onboarding.useCity' | translate }}</span>
+      </button>
+    </div>
+
+    @if (locationMode() === 'gps') {
+      @if (locatingGps()) {
+        <app-inline-message severity="info">{{ 'onboarding.locating' | translate }}</app-inline-message>
+      } @else if (gpsStatus() === 'success') {
+        <app-inline-message severity="success">{{ 'onboarding.gpsFound' | translate }}</app-inline-message>
+      } @else if (gpsError()) {
+        <app-inline-message severity="warn">{{ 'onboarding.gpsDenied' | translate }}</app-inline-message>
+      }
+    } @else {
+      <mat-form-field class="settings__field" appearance="outline">
+        <input
+          matInput
+          [matAutocomplete]="cityAuto"
+          [placeholder]="'onboarding.cityPlaceholder' | translate"
+          (input)="searchCities($any($event.target).value)"
+        />
+        <mat-autocomplete #cityAuto="matAutocomplete" [displayWith]="cityDisplayFn" (optionSelected)="onCitySelected($event)">
+          @for (city of citySuggestions(); track city.city) {
+            <mat-option [value]="city">{{ city.city }}, {{ city.country }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+    }
+
+    <div class="settings__row settings__row--stacked">
+      <mat-form-field class="settings__field" appearance="outline">
+        <mat-label>{{ 'settings.calculationMethod' | translate }}</mat-label>
+        <mat-select [ngModel]="settings().prayerCalculationMethod" (ngModelChange)="setCalculationMethod($event)">
+          @for (method of calculationMethods; track method) {
+            <mat-option [value]="method">{{ method }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-button-toggle-group [ngModel]="settings().prayerMadhab" (ngModelChange)="setMadhab($event)">
+      @for (option of madhabOptions; track option.value) {
+        <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.weekSettings' | translate }}</h2>
+    <mat-button-toggle-group [ngModel]="settings().firstDayOfWeek" (ngModelChange)="setFirstDayOfWeek($event)">
+      @for (option of weekDayOptions; track option.value) {
+        <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.notifications' | translate }}</h2>
+    <div class="settings__row settings__row--toggle">
+      <span>{{ 'settings.prayerReminders' | translate }}</span>
+      <mat-slide-toggle
+        [ngModel]="settings().notifications.prayerRemindersEnabled"
+        (ngModelChange)="togglePrayerReminders($event)"
+      />
+    </div>
+    <div class="settings__row settings__row--toggle">
+      <span>{{ 'settings.habitReminders' | translate }}</span>
+      <mat-slide-toggle
+        [ngModel]="settings().notifications.habitRemindersEnabled"
+        (ngModelChange)="toggleHabitReminders($event)"
+      />
+    </div>
+    @if (notificationPermission() !== 'granted') {
+      <button mat-stroked-button type="button" (click)="requestNotificationPermission()">
+        {{ 'settings.enableNotifications' | translate }}
+      </button>
+    }
+  </section>
+
+  <section class="settings__card">
+    <h2>{{ 'settings.dataManagement' | translate }}</h2>
+    <div class="settings__row">
+      <button mat-flat-button type="button" [disabled]="exporting()" (click)="exportData()">
+        {{ 'settings.exportData' | translate }}
+      </button>
+      <button mat-stroked-button type="button" [disabled]="importing()" (click)="importInput.click()">
+        {{ 'settings.importData' | translate }}
+      </button>
+      <input #importInput type="file" accept="application/json" hidden (change)="onImportFileSelected($event)" />
+    </div>
+    @if (importMessage(); as msg) {
+      <app-inline-message [severity]="msg.kind === 'error' ? 'error' : 'success'">{{ msg.text }}</app-inline-message>
+    }
+  </section>
+</div>

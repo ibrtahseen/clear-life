@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>{{ 'habits.archived' | translate }}</h2>
+
+<mat-dialog-content class="archived-habits">
+  @if (habits().length === 0) {
+    <p class="archived-habits__empty">{{ 'habits.noArchivedHabits' | translate }}</p>
+  } @else {
+    @for (habit of habits(); track habit.id) {
+      <article class="archived-habits__card">
+        <div class="archived-habits__icon" [style.background]="habit.color + '22'" [style.color]="habit.color">
+          <mat-icon>{{ habit.icon }}</mat-icon>
+        </div>
+
+        <div class="archived-habits__info">
+          <h3>{{ habit.title }}</h3>
+          <span class="archived-habits__category-tag">{{ categoryLabel(habit.category) }}</span>
+        </div>
+
+        <div class="archived-habits__actions">
+          <button
+            mat-icon-button
+            type="button"
+            [attr.aria-label]="'habits.restore' | translate"
+            [title]="'habits.restore' | translate"
+            (click)="restore(habit)"
+          >
+            <mat-icon>unarchive</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            [attr.aria-label]="'habits.deleteForever' | translate"
+            [title]="'habits.deleteForever' | translate"
+            (click)="deleteForever(habit)"
+          >
+            <mat-icon>delete_forever</mat-icon>
+          </button>
+        </div>
+      </article>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>{{ 'common.close' | translate }}</button>
+</mat-dialog-actions>

@@ -1,0 +1,39 @@
+// Include theming for Angular Material with `mat.theme()`.
+// `theme-type: color-scheme` emits CSS `light-dark()` values that follow the
+// `color-scheme` property, so dark mode is toggled purely by setting
+// `document.documentElement.style.colorScheme` (see core/services/theme.ts) —
+// no separate dark theme block or class selector is needed.
+// https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: color-scheme,
+        primary: mat.$violet-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+* {
+  box-sizing: border-box;
+}

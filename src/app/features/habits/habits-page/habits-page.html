@@ -1,0 +1,86 @@
+<div class="habits">
+  <header class="habits__header">
+    <h1>{{ 'habits.title' | translate }}</h1>
+    <div class="habits__header-actions">
+      <button
+        mat-icon-button
+        type="button"
+        [attr.aria-label]="'habits.archived' | translate"
+        [title]="'habits.archived' | translate"
+        (click)="openArchivedHabits()"
+      >
+        <mat-icon [matBadge]="archivedCount()" [matBadgeHidden]="archivedCount() === 0" matBadgeSize="small">
+          inventory_2
+        </mat-icon>
+      </button>
+      <button mat-flat-button type="button" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        {{ 'habits.add' | translate }}
+      </button>
+    </div>
+  </header>
+
+  @if (habits().length === 0) {
+    <p class="habits__empty">{{ 'habits.empty' | translate }}</p>
+  } @else {
+    <div class="habits__list" cdkDropList (cdkDropListDropped)="onDrop($event)">
+      @for (habit of habits(); track habit.id) {
+        <article class="habits__card" cdkDrag [class.habits__card--inactive]="!isScheduledToday(habit)">
+          <div class="habits__drag-handle" cdkDragHandle [attr.aria-label]="'habits.reorder' | translate">
+            <mat-icon>drag_indicator</mat-icon>
+          </div>
+
+          <div class="habits__icon" [style.background]="habit.color + '22'" [style.color]="habit.color">
+            <mat-icon>{{ habit.icon }}</mat-icon>
+          </div>
+
+          <div class="habits__info">
+            <div class="habits__title-row">
+              <h3>{{ habit.title }}</h3>
+              <span class="habits__category-tag">{{ categoryLabel(habit.category) }}</span>
+            </div>
+            <div class="habits__days">
+              @for (day of habit.schedule; track day) {
+                <span class="habits__day-chip" [class.habits__day-chip--today]="day === todayWeekday">
+                  {{ weekdayLabel(day) }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="habits__actions">
+            @if (isScheduledToday(habit)) {
+              <button
+                type="button"
+                class="habits__toggle"
+                [class.habits__toggle--done]="isCompletedToday(habit)"
+                [attr.aria-label]="'habits.toggleToday' | translate"
+                (click)="toggle(habit)"
+              >
+                @if (isCompletedToday(habit)) {
+                  <mat-icon>check</mat-icon>
+                }
+              </button>
+            }
+            <button
+              mat-icon-button
+              type="button"
+              [attr.aria-label]="'common.edit' | translate"
+              (click)="openEditDialog(habit)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              [attr.aria-label]="'common.archive' | translate"
+              (click)="confirmArchive(habit)"
+            >
+              <mat-icon>archive</mat-icon>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,84 @@
+.habit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.habit-form__label {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 0.6rem;
+}
+
+.habit-form__field,
+.habit-form__time {
+  width: 100%;
+}
+
+.habit-form__time {
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.habit-form__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.habit-form__icon-swatch {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &--active {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.habit-form__color-swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+
+  &--active {
+    border-color: var(--mat-sys-on-surface);
+  }
+}
+
+.habit-form__weekdays {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.habit-form__weekday {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.8rem;
+
+  &--active {
+    border-color: var(--mat-sys-primary);
+    background: var(--mat-sys-primary);
+    color: var(--mat-sys-on-primary, #fff);
+  }
+}

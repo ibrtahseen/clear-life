@@ -1,0 +1,70 @@
+<div class="calendar">
+  <header class="calendar__header">
+    <button mat-icon-button type="button" [attr.aria-label]="'common.previous' | translate" (click)="previousMonth()">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <div class="calendar__title">
+      <h1>{{ monthLabel() }}</h1>
+      <p>{{ hijriMonthLabel() }}</p>
+    </div>
+    <button mat-icon-button type="button" [attr.aria-label]="'common.next' | translate" (click)="nextMonth()">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </header>
+
+  <div class="calendar__weekdays">
+    @for (day of weekdayHeaders(); track day) {
+      <span>{{ day }}</span>
+    }
+  </div>
+
+  <div class="calendar__grid">
+    @for (day of days(); track day.date) {
+      <button
+        type="button"
+        class="calendar__day"
+        [class.calendar__day--outside]="!day.isCurrentMonth"
+        [class.calendar__day--today]="day.isToday"
+        [class.calendar__day--selected]="day.date === selectedDate()"
+        (click)="selectDay(day.date)"
+      >
+        <span class="calendar__day-number">{{ day.dayNumber }}</span>
+        <span class="calendar__day-hijri">{{ day.hijriDay }}</span>
+        <span class="calendar__day-dot" [class]="heatClass(day.rate)"></span>
+      </button>
+    }
+  </div>
+
+  @if (dayDetail(); as detail) {
+    <section class="calendar__detail">
+      <h2>{{ selectedDate() }}</h2>
+
+      <div class="calendar__detail-group">
+        <h3>{{ 'prayers.title' | translate }}</h3>
+        <div class="calendar__chip-row">
+          @for (prayer of detail.prayers; track prayer.name) {
+            <span class="calendar__chip" [class.calendar__chip--done]="prayer.completed">
+              {{ 'prayers.' + prayer.name | translate }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="calendar__detail-group">
+        <h3>{{ 'habits.title' | translate }}</h3>
+        @if (detail.habits.length === 0) {
+          <p class="calendar__empty">{{ 'dashboard.noHabitsToday' | translate }}</p>
+        } @else {
+          <div class="calendar__chip-row">
+            @for (habit of detail.habits; track habit.title) {
+              <span class="calendar__chip" [class.calendar__chip--done]="habit.completed">
+                <mat-icon>{{ habit.icon }}</mat-icon>
+                {{ habit.title }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

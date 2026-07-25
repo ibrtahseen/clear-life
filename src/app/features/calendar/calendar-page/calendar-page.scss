@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.calendar__title {
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0.15rem 0 0;
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+}
+
+.calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.4rem;
+
+  span {
+    text-align: center;
+    font-size: 0.7rem;
+    opacity: 0.55;
+  }
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0.2rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--mat-sys-surface) 70%, transparent);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+
+  &--outside {
+    opacity: 0.35;
+  }
+
+  &--today {
+    border-color: var(--mat-sys-primary);
+  }
+
+  &--selected {
+    background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+  }
+}
+
+.calendar__day-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.calendar__day-hijri {
+  font-size: 0.6rem;
+  opacity: 0.55;
+}
+
+.calendar__day-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  margin-top: 0.1rem;
+
+  &.heat-0 {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 15%, transparent);
+  }
+  &.heat-1 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
+  }
+  &.heat-2 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 55%, transparent);
+  }
+  &.heat-3 {
+    background: color-mix(in srgb, var(--mat-sys-primary) 80%, transparent);
+  }
+  &.heat-4 {
+    background: var(--mat-sys-primary);
+  }
+}
+
+.calendar__detail {
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+.calendar__detail-group {
+  margin-bottom: 0.85rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.65;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+.calendar__empty {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.calendar__chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.calendar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+  opacity: 0.7;
+
+  mat-icon {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &--done {
+    opacity: 1;
+    background: color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
+    color: var(--mat-sys-primary);
+  }
+}
