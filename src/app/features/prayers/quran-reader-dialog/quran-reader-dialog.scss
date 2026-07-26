@@ -19,54 +19,68 @@
 .quran-reader__mushaf {
   direction: rtl;
   text-align: center;
-  padding: 1rem 0.5rem;
-  margin-bottom: 1.25rem;
+  padding: 1.25rem 1rem;
   border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 25%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+  outline-offset: 4px;
   background: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent);
 }
 
-.quran-reader__line {
+.quran-reader__surah-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+
+  &:not(:first-child) {
+    margin-top: 1.5rem;
+  }
+}
+
+.quran-reader__surah-ornament {
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 35%, transparent);
+}
+
+.quran-reader__surah-name {
+  flex-shrink: 0;
+  font-family: 'Amiri Quran', 'Traditional Arabic', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
+
+.quran-reader__verses {
   font-family: 'Amiri Quran', 'Traditional Arabic', serif;
   font-size: 1.6rem;
-  line-height: 2.4;
+  line-height: 2.6;
   margin: 0;
   color: var(--mat-sys-on-surface);
 }
 
-.quran-reader__translations {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.quran-reader__surah-name {
-  margin: 0.75rem 0 0.25rem;
-  font-size: 0.95rem;
+.quran-reader__bismillah {
+  display: block;
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
   color: var(--mat-sys-primary);
-
-  &:first-child {
-    margin-top: 0;
-  }
 }
 
-.quran-reader__verse {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  opacity: 0.85;
-}
-
-.quran-reader__verse-number {
+.quran-reader__ayah-marker {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  margin-inline-end: 0.4rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0 0.15rem;
   border-radius: 999px;
-  font-size: 0.7rem;
-  background: color-mix(in srgb, var(--mat-sys-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+  font-family: Roboto, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--mat-sys-primary);
+  vertical-align: middle;
 }
 
 .quran-reader__pager {

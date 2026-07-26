@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '@ngx-translate/core';
 
-import { QuranContentApi } from '../../../core/services/quran-content-api';
+import { QuranPagesData, QuranPageSurahBlock } from '../../../core/services/quran-pages-data';
 import { Prayer as PrayerService } from '../../../core/services/prayer';
 import { PrayerName } from '../../../core/models/prayer.model';
 import { InlineMessage } from '../../../shared/components/inline-message/inline-message';
@@ -17,19 +17,6 @@ export interface QuranReaderDialogData {
   alreadyCompleted: boolean;
 }
 
-interface DisplayLine {
-  lineNumber: number;
-  text: string;
-}
-
-interface DisplayVerse {
-  verseKey: string;
-  surahName: string;
-  ayah: number;
-  translation: string;
-  isFirstOfSurah: boolean;
-}
-
 @Component({
   selector: 'app-quran-reader-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, TranslatePipe, InlineMessage],
@@ -38,7 +25,7 @@ interface DisplayVerse {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class QuranReaderDialog {
-  private readonly quranContentApi = inject(QuranContentApi);
+  private readonly quranPagesData = inject(QuranPagesData);
   private readonly prayerService = inject(PrayerService);
   private readonly dialogRef = inject(MatDialogRef<QuranReaderDialog, boolean>);
   readonly data = inject<QuranReaderDialogData>(MAT_DIALOG_DATA);
@@ -47,8 +34,7 @@ export class QuranReaderDialog {
   readonly currentPage = computed(() => this.data.pages[this.pageIndex()]);
   readonly loading = signal(false);
   readonly error = signal(false);
-  readonly lines = signal<DisplayLine[]>([]);
-  readonly verses = signal<DisplayVerse[]>([]);
+  readonly blocks = signal<QuranPageSurahBlock[]>([]);
   readonly marking = signal(false);
 
   constructor() {
@@ -79,52 +65,7 @@ export class QuranReaderDialog {
     this.loading.set(true);
     this.error.set(false);
     try {
-      const mushafPage = await this.quranContentApi.fetchMushafPage(page);
-
-      const lineMap = new Map<number, string[]>();
-      for (const word of mushafPage.words) {
-        const words = lineMap.get(word.lineNumber) ?? [];
-        words.push(word.textUthmani);
-        lineMap.set(word.lineNumber, words);
-      }
-      this.lines.set(
-        Array.from(lineMap.entries())
-          .sort(([a], [b]) => a - b)
-          .map(([lineNumber, words]) => ({ lineNumber, text: words.join(' ') })),
-      );
-
-      const orderedVerses: { verseKey: string; surahNumber: number; ayahNumber: number }[] = [];
-      const seenKeys = new Set<string>();
-      for (const word of mushafPage.words) {
-        if (!seenKeys.has(word.verseKey)) {
-          seenKeys.add(word.verseKey);
-          orderedVerses.push({
-            verseKey: word.verseKey,
-            surahNumber: word.surahNumber,
-            ayahNumber: word.ayahNumber,
-          });
-        }
-      }
-
-      const distinctSurahs = Array.from(new Set(orderedVerses.map((v) => v.surahNumber)));
-      const surahContents = await Promise.all(distinctSurahs.map((n) => this.quranContentApi.fetchSurah(n)));
-      const surahByNumber = new Map(surahContents.map((s) => [s.info.number, s]));
-
-      let lastSurah: number | null = null;
-      const verses: DisplayVerse[] = [];
-      for (const { verseKey, surahNumber, ayahNumber } of orderedVerses) {
-        const surah = surahByNumber.get(surahNumber);
-        const verse = surah?.versesByKey.get(verseKey);
-        verses.push({
-          verseKey,
-          ayah: ayahNumber,
-          translation: verse?.translation ?? '',
-          surahName: surah?.info.nameEnglish ?? '',
-          isFirstOfSurah: lastSurah !== surahNumber,
-        });
-        lastSurah = surahNumber;
-      }
-      this.verses.set(verses);
+      this.blocks.set(await this.quranPagesData.getPage(page));
     } catch {
       this.error.set(true);
     } finally {

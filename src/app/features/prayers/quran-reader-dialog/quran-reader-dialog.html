@@ -14,19 +14,21 @@
     </button>
   } @else {
     <div class="quran-reader__mushaf">
-      @for (line of lines(); track line.lineNumber) {
-        <p class="quran-reader__line">{{ line.text }}</p>
-      }
-    </div>
-
-    <div class="quran-reader__translations">
-      @for (verse of verses(); track verse.verseKey) {
-        @if (verse.isFirstOfSurah) {
-          <h3 class="quran-reader__surah-name">{{ verse.surahName }}</h3>
-        }
-        <p class="quran-reader__verse">
-          <span class="quran-reader__verse-number">{{ verse.ayah }}</span>
-          {{ verse.translation }}
+      @for (block of blocks(); track block.surahName) {
+        <div class="quran-reader__surah-header">
+          <span class="quran-reader__surah-ornament"></span>
+          <span class="quran-reader__surah-name">سورة {{ block.surahName }}</span>
+          <span class="quran-reader__surah-ornament"></span>
+        </div>
+        <p class="quran-reader__verses">
+          @for (verse of block.verses; track verse.ayah) {
+            @if (verse.ayah === 0) {
+              <span class="quran-reader__bismillah">{{ verse.text }}</span>
+            } @else {
+              {{ verse.text }}
+              <span class="quran-reader__ayah-marker">{{ verse.ayah }}</span>
+            }
+          }
         </p>
       }
     </div>

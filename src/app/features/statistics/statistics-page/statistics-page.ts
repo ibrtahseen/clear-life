@@ -1,7 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
-import type { ChartConfiguration } from 'chart.js';
+import { BaseChartDirective, provideCharts } from 'ng2-charts';
+import {
+  ArcElement,
+  BarController,
+  BarElement,
+  CategoryScale,
+  DoughnutController,
+  Legend,
+  LinearScale,
+  Tooltip,
+  type ChartConfiguration,
+} from 'chart.js';
 import dayjs from 'dayjs';
 
 import { SettingsStore } from '../../../core/services/settings-store';
@@ -14,7 +24,14 @@ const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a
 @Component({
   selector: 'app-statistics-page',
   imports: [TranslatePipe, BaseChartDirective],
-  providers: [provideCharts(withDefaultRegisterables())],
+  // Only 'bar' and 'doughnut' charts are used here — registering the full default
+  // set (radar, bubble, scatter, time scales, etc.) via withDefaultRegisterables()
+  // pulled a large chunk of unused chart.js into this page's bundle.
+  providers: [
+    provideCharts({
+      registerables: [BarController, DoughnutController, CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip],
+    }),
+  ],
   templateUrl: './statistics-page.html',
   styleUrl: './statistics-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
