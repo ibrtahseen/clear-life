@@ -2,7 +2,7 @@ import { Service, computed, inject, signal } from '@angular/core';
 import { HabitRepository } from '../data/repositories/habit-repository';
 import { HabitHistoryRepository } from '../data/repositories/habit-history-repository';
 import { Habit as HabitModel, HabitHistoryEntry } from '../models/habit.model';
-import { WeekDay } from '../models/common.model';
+import { IsoDate, WeekDay } from '../models/common.model';
 import { todayIso } from '../utils/date.util';
 
 @Service()
@@ -89,6 +89,22 @@ export class Habit {
     const updated = this.todayHistory().filter((e) => e.habitId !== habitId);
     updated.push(entry);
     this.todayHistory.set(updated);
+  }
+
+  /** History entries for an arbitrary date, for the per-day habits view. */
+  async historyForDate(date: IsoDate): Promise<HabitHistoryEntry[]> {
+    return this.habitHistoryRepository.getForDate(date);
+  }
+
+  /** Toggles completion for an arbitrary date; keeps `todayHistory` in sync if that date is today. */
+  async toggleForDate(habitId: number, date: IsoDate, wasCompleted: boolean): Promise<HabitHistoryEntry> {
+    const entry = await this.habitHistoryRepository.setCompletion(habitId, date, !wasCompleted);
+    if (date === todayIso()) {
+      const updated = this.todayHistory().filter((e) => e.habitId !== habitId);
+      updated.push(entry);
+      this.todayHistory.set(updated);
+    }
+    return entry;
   }
 
   /** Persists a new drag-and-drop display order for active habits (index 0 sorts first). */

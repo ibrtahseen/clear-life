@@ -70,6 +70,7 @@
   },
   "habits": {
     "title": "Habits",
+    "all": "All",
     "add": "Add Habit",
     "empty": "No habits yet. Add your first one to get started.",
     "addTitle": "New Habit",

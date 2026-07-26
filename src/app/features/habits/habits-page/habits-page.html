@@ -20,15 +20,40 @@
     </div>
   </header>
 
-  @if (habits().length === 0) {
+  <div class="habits__day-strip">
+    <button
+      type="button"
+      class="habits__day-btn habits__day-btn--all"
+      [class.habits__day-btn--active]="viewMode() === 'all'"
+      (click)="selectAll()"
+    >
+      {{ 'habits.all' | translate }}
+    </button>
+    @for (date of weekDates(); track date) {
+      <button
+        type="button"
+        class="habits__day-btn"
+        [class.habits__day-btn--active]="viewMode() === 'day' && selectedDate() === date"
+        [class.habits__day-btn--today]="date === todayIsoDate"
+        (click)="selectDay(date)"
+      >
+        <span class="habits__day-btn-name">{{ weekdayLabel(date) }}</span>
+        <span class="habits__day-btn-num">{{ dayNumber(date) }}</span>
+      </button>
+    }
+  </div>
+
+  @if (displayedHabits().length === 0) {
     <p class="habits__empty">{{ 'habits.empty' | translate }}</p>
   } @else {
-    <div class="habits__list" cdkDropList (cdkDropListDropped)="onDrop($event)">
-      @for (habit of habits(); track habit.id) {
-        <article class="habits__card" cdkDrag [class.habits__card--inactive]="!isScheduledToday(habit)">
-          <div class="habits__drag-handle" cdkDragHandle [attr.aria-label]="'habits.reorder' | translate">
-            <mat-icon>drag_indicator</mat-icon>
-          </div>
+    <div class="habits__list" cdkDropList [cdkDropListDisabled]="viewMode() !== 'all'" (cdkDropListDropped)="onDrop($event)">
+      @for (habit of displayedHabits(); track habit.id) {
+        <article class="habits__card" cdkDrag [cdkDragDisabled]="viewMode() !== 'all'">
+          @if (viewMode() === 'all') {
+            <div class="habits__drag-handle" cdkDragHandle [attr.aria-label]="'habits.reorder' | translate">
+              <mat-icon>drag_indicator</mat-icon>
+            </div>
+          }
 
           <div class="habits__icon" [style.background]="habit.color + '22'" [style.color]="habit.color">
             <mat-icon>{{ habit.icon }}</mat-icon>
@@ -39,25 +64,19 @@
               <h3>{{ habit.title }}</h3>
               <span class="habits__category-tag">{{ categoryLabel(habit.category) }}</span>
             </div>
-            <div class="habits__days">
-              @for (day of habit.schedule; track day) {
-                <span class="habits__day-chip" [class.habits__day-chip--today]="day === todayWeekday">
-                  {{ weekdayLabel(day) }}
-                </span>
-              }
-            </div>
           </div>
 
           <div class="habits__actions">
-            @if (isScheduledToday(habit)) {
+            @if (viewMode() === 'day') {
               <button
                 type="button"
                 class="habits__toggle"
-                [class.habits__toggle--done]="isCompletedToday(habit)"
+                [class.habits__toggle--done]="isCompletedSelected(habit)"
+                [disabled]="!isSelectedToday()"
                 [attr.aria-label]="'habits.toggleToday' | translate"
                 (click)="toggle(habit)"
               >
-                @if (isCompletedToday(habit)) {
+                @if (isCompletedSelected(habit)) {
                   <mat-icon>check</mat-icon>
                 }
               </button>

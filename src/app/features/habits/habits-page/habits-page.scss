@@ -34,6 +34,58 @@
   padding: 3rem 1rem;
 }
 
+.habits__day-strip {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1.1rem;
+  scrollbar-width: thin;
+}
+
+.habits__day-btn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 2.75rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--mat-sys-surface) 70%, transparent);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+
+  &--all {
+    min-width: auto;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &--today {
+    border-color: var(--mat-sys-primary);
+  }
+
+  &--active {
+    background: color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
+    color: var(--mat-sys-primary);
+  }
+}
+
+.habits__day-btn-name {
+  font-size: 0.65rem;
+  opacity: 0.65;
+}
+
+.habits__day-btn-num {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .habits__list {
   display: flex;
   flex-direction: column;
@@ -49,10 +101,6 @@
   background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
   border: 1px solid var(--mat-sys-outline-variant);
   transition: opacity 0.2s ease;
-
-  &--inactive {
-    opacity: 0.55;
-  }
 
   &.cdk-drag-preview {
     box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3);
@@ -129,27 +177,6 @@
   text-transform: capitalize;
 }
 
-.habits__days {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
-}
-
-.habits__day-chip {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.4rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
-  opacity: 0.7;
-
-  &--today {
-    opacity: 1;
-    background: color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
-    color: var(--mat-sys-primary);
-  }
-}
-
 .habits__actions {
   display: flex;
   align-items: center;
@@ -173,5 +200,10 @@
     border-color: var(--mat-sys-primary);
     background: var(--mat-sys-primary);
     color: var(--mat-sys-on-primary, #fff);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
