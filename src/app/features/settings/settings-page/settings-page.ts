@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,21 +26,6 @@ interface StepOption<T> {
   icon?: string;
 }
 
-const CALCULATION_METHODS = [
-  'MuslimWorldLeague',
-  'Egyptian',
-  'Karachi',
-  'UmmAlQura',
-  'Dubai',
-  'MoonsightingCommittee',
-  'NorthAmerica',
-  'Kuwait',
-  'Qatar',
-  'Singapore',
-  'Turkey',
-  'Tehran',
-];
-
 @Component({
   selector: 'app-settings-page',
   imports: [
@@ -52,7 +36,6 @@ const CALCULATION_METHODS = [
     MatFormFieldModule,
     MatInputModule,
     MatButtonToggleModule,
-    MatSelectModule,
     MatSlideToggleModule,
     MatAutocompleteModule,
     MatIconModule,
@@ -73,7 +56,6 @@ export class SettingsPage {
   private readonly translate = inject(TranslateService);
 
   readonly settings = computed(() => this.settingsStore.settings());
-  readonly calculationMethods = CALCULATION_METHODS;
 
   private readonly nameModel = signal({ name: '' });
   readonly nameForm = form(this.nameModel, (path) => {
@@ -96,11 +78,6 @@ export class SettingsPage {
     { label: 'Sunday', value: 0 },
     { label: 'Monday', value: 1 },
     { label: 'Saturday', value: 6 },
-  ];
-
-  readonly madhabOptions: StepOption<'Shafi' | 'Hanafi'>[] = [
-    { label: 'Shafi', value: 'Shafi' },
-    { label: 'Hanafi', value: 'Hanafi' },
   ];
 
   readonly locationMode = signal<'gps' | 'manual'>(this.settings().location?.type ?? 'gps');
@@ -150,12 +127,8 @@ export class SettingsPage {
     await this.settingsStore.update({ firstDayOfWeek: day });
   }
 
-  async setCalculationMethod(method: string): Promise<void> {
-    await this.settingsStore.update({ prayerCalculationMethod: method });
-  }
-
-  async setMadhab(madhab: 'Hanafi' | 'Shafi'): Promise<void> {
-    await this.settingsStore.update({ prayerMadhab: madhab });
+  async setQuranPagesPerPrayer(pages: number): Promise<void> {
+    await this.settingsStore.update({ quranPagePerPry: pages });
   }
 
   async togglePrayerReminders(enabled: boolean): Promise<void> {

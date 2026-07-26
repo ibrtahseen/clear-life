@@ -96,22 +96,20 @@
       </mat-form-field>
     }
 
-    <div class="settings__row settings__row--stacked">
-      <mat-form-field class="settings__field" appearance="outline">
-        <mat-label>{{ 'settings.calculationMethod' | translate }}</mat-label>
-        <mat-select [ngModel]="settings().prayerCalculationMethod" (ngModelChange)="setCalculationMethod($event)">
-          @for (method of calculationMethods; track method) {
-            <mat-option [value]="method">{{ method }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
+  </section>
 
-    <mat-button-toggle-group [ngModel]="settings().prayerMadhab" (ngModelChange)="setMadhab($event)">
-      @for (option of madhabOptions; track option.value) {
-        <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
-      }
-    </mat-button-toggle-group>
+  <section class="settings__card">
+    <h2>{{ 'settings.quranSettings' | translate }}</h2>
+    <mat-form-field class="settings__field" appearance="outline">
+      <mat-label>{{ 'settings.quranPagesPerPrayer' | translate }}</mat-label>
+      <input
+        matInput
+        type="number"
+        min="1"
+        [ngModel]="settings().quranPagePerPry"
+        (ngModelChange)="setQuranPagesPerPrayer($event)"
+      />
+    </mat-form-field>
   </section>
 
   <section class="settings__card">

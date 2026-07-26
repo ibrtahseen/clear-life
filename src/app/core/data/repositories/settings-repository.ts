@@ -12,8 +12,7 @@ export function buildDefaultSettings(): AppSettings {
     firstDayOfWeek: 6,
     location: null,
     notifications: { ...DEFAULT_NOTIFICATION_SETTINGS },
-    prayerCalculationMethod: 'MuslimWorldLeague',
-    prayerMadhab: 'Shafi',
+    quranPagePerPry: 1,
     updatedAt: new Date().toISOString(),
   };
 }

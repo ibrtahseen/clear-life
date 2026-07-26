@@ -15,8 +15,7 @@ export interface AppSettings {
   firstDayOfWeek: WeekDay;
   location: GeoLocation | null;
   notifications: NotificationSettings;
-  prayerCalculationMethod: string;
-  prayerMadhab: 'Hanafi' | 'Shafi';
+  quranPagePerPry: number;
   updatedAt: string;
 }
 

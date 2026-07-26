@@ -75,8 +75,6 @@ export class Prayer {
         latitude: location.latitude,
         longitude: location.longitude,
         date,
-        method: settings.prayerCalculationMethod,
-        madhab: settings.prayerMadhab,
         timezone: location.timezone,
       });
       const fresh: DailyPrayerSchedule = {
