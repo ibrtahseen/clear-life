@@ -9,7 +9,7 @@ import { InlineMessage } from '../../../shared/components/inline-message/inline-
 import { Prayer as PrayerService } from '../../../core/services/prayer';
 import { Quran as QuranService, PrayerPageRange } from '../../../core/services/quran';
 import { PRAYER_NAMES, PrayerName } from '../../../core/models/prayer.model';
-import { formatTime, todayIso } from '../../../core/utils/date.util';
+import { countdownToTime, formatTime, todayIso } from '../../../core/utils/date.util';
 import { QuranReaderDialog, QuranReaderDialogData } from '../quran-reader-dialog/quran-reader-dialog';
 
 @Component({
@@ -37,18 +37,7 @@ export class PrayersPage implements OnDestroy {
   readonly now = signal(Date.now());
   readonly countdownLabel = computed(() => {
     const next = this.nextPrayer();
-    if (!next) return '';
-    const [h, m] = next.time.split(':').map(Number);
-    const target = new Date();
-    target.setHours(h, m, 0, 0);
-    if (target.getTime() < this.now()) {
-      target.setDate(target.getDate() + 1);
-    }
-    const diffMs = target.getTime() - this.now();
-    const totalMinutes = Math.max(0, Math.round(diffMs / 60000));
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    return next ? countdownToTime(next.time, this.now()) : '';
   });
 
   constructor() {

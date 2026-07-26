@@ -1,0 +1,85 @@
+<div class="stay-focus">
+  <header class="stay-focus__header">
+    <h1>{{ 'stayFocus.title' | translate }}</h1>
+    <button mat-flat-button type="button" [disabled]="atLimit()" (click)="openAddForm()">
+      <mat-icon>add</mat-icon>
+      {{ 'stayFocus.add' | translate }}
+    </button>
+  </header>
+
+  @if (activeCountdown(); as running) {
+    <section class="stay-focus__active">
+      <span class="stay-focus__active-phase">{{ phaseLabel() }}</span>
+      <span class="stay-focus__active-name">{{ running.name }}</span>
+      <span class="stay-focus__active-time">{{ remainingLabel() }}</span>
+      <button mat-stroked-button type="button" (click)="stop()">
+        {{ 'stayFocus.stop' | translate }}
+      </button>
+    </section>
+  }
+
+  @if (atLimit()) {
+    <p class="stay-focus__limit">{{ 'stayFocus.limitReached' | translate }}</p>
+  }
+
+  @if (showAddForm()) {
+    <section class="stay-focus__form">
+      <mat-form-field class="stay-focus__field" appearance="outline">
+        <mat-label>{{ 'stayFocus.nameLabel' | translate }}</mat-label>
+        <input matInput [ngModel]="newName()" (ngModelChange)="newName.set($event)" [placeholder]="'stayFocus.namePlaceholder' | translate" />
+      </mat-form-field>
+
+      <div class="stay-focus__minutes-row">
+        <mat-form-field class="stay-focus__field" appearance="outline">
+          <mat-label>{{ 'stayFocus.focusMinutesLabel' | translate }}</mat-label>
+          <input matInput type="number" min="1" [ngModel]="newFocusMinutes()" (ngModelChange)="newFocusMinutes.set($event)" />
+        </mat-form-field>
+
+        <mat-form-field class="stay-focus__field" appearance="outline">
+          <mat-label>{{ 'stayFocus.breakMinutesLabel' | translate }}</mat-label>
+          <input matInput type="number" min="0" [ngModel]="newBreakMinutes()" (ngModelChange)="newBreakMinutes.set($event)" />
+        </mat-form-field>
+      </div>
+
+      <div class="stay-focus__form-actions">
+        <button mat-button type="button" (click)="cancelAdd()">{{ 'common.cancel' | translate }}</button>
+        <button mat-flat-button type="button" [disabled]="!newName().trim()" (click)="saveNew()">
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </section>
+  }
+
+  @if (countdowns().length === 0) {
+    <p class="stay-focus__empty">{{ 'stayFocus.empty' | translate }}</p>
+  } @else {
+    <div class="stay-focus__list">
+      @for (countdown of countdowns(); track countdown.id) {
+        <article class="stay-focus__card" [class.stay-focus__card--running]="isRunning(countdown)">
+          <div class="stay-focus__card-info">
+            <span class="stay-focus__card-name">{{ countdown.name }}</span>
+            <span class="stay-focus__card-meta">
+              {{ 'stayFocus.focusMinutesShort' | translate: { minutes: countdown.focusMinutes } }}
+              &middot;
+              {{ 'stayFocus.breakMinutesShort' | translate: { minutes: countdown.breakMinutes } }}
+            </span>
+          </div>
+          <div class="stay-focus__card-actions">
+            @if (isRunning(countdown)) {
+              <button mat-icon-button type="button" [attr.aria-label]="'stayFocus.stop' | translate" (click)="stop()">
+                <mat-icon>stop</mat-icon>
+              </button>
+            } @else {
+              <button mat-icon-button type="button" [attr.aria-label]="'stayFocus.run' | translate" (click)="run(countdown)">
+                <mat-icon>play_arrow</mat-icon>
+              </button>
+            }
+            <button mat-icon-button type="button" [attr.aria-label]="'common.delete' | translate" (click)="delete(countdown)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

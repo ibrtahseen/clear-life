@@ -6,6 +6,8 @@ export interface Habit {
   icon: string;
   color: string;
   category: HabitCategory;
+  /** Set only when `category` is 'custom' — id of the user-created Category. */
+  customCategoryId?: number | null;
   /** Days of week this habit is scheduled on */
   schedule: WeekDay[];
   reminderTime: string | null;

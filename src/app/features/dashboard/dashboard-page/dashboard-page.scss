@@ -50,6 +50,11 @@
   color: var(--mat-sys-primary);
 }
 
+.dashboard__countdown-at {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
 .dashboard__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

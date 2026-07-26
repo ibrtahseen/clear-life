@@ -13,6 +13,7 @@
     "save": "حفظ",
     "edit": "تعديل",
     "archive": "أرشفة",
+    "delete": "حذف",
     "retry": "إعادة المحاولة",
     "loading": "جارٍ التحميل..."
   },
@@ -20,6 +21,7 @@
     "dashboard": "الرئيسية",
     "habits": "العادات",
     "prayers": "الصلاة",
+    "stayFocus": "التركيز",
     "statistics": "الإحصائيات",
     "calendar": "التقويم",
     "settings": "الإعدادات",
@@ -81,6 +83,9 @@
     "iconLabel": "الأيقونة",
     "colorLabel": "اللون",
     "categoryLabel": "الفئة",
+    "newCategory": "جديد",
+    "categoryNameLabel": "اسم الفئة",
+    "categoryNamePlaceholder": "مثال: الألعاب",
     "scheduleLabel": "التكرار في",
     "reminderLabel": "تذكير (اختياري)",
     "toggleToday": "تبديل إنجاز اليوم",
@@ -167,5 +172,25 @@
     "prayerReminderNamed": "{{name}}، حان وقت صلاة {{prayer}}.",
     "habitReminder": "لا تنسَ عادة {{habit}}.",
     "habitReminderNamed": "{{name}}، لا تنسَ عادة {{habit}}."
+  },
+  "stayFocus": {
+    "title": "التركيز",
+    "add": "عداد جديد",
+    "empty": "لا توجد عدادات بعد. أضف واحدًا لبدء التركيز.",
+    "limitReached": "لقد وصلت إلى الحد الأقصى وهو 20 عدادًا.",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "مثال: عمل عميق في المنزل",
+    "focusMinutesLabel": "دقائق التركيز",
+    "breakMinutesLabel": "دقائق الاستراحة",
+    "focusMinutesShort": "{{minutes}} د تركيز",
+    "breakMinutesShort": "{{minutes}} د استراحة",
+    "focusPhase": "تركيز",
+    "breakPhase": "استراحة",
+    "run": "تشغيل",
+    "stop": "إيقاف",
+    "deleteConfirmHeader": "حذف العداد؟",
+    "deleteConfirmMessage": "حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا.",
+    "focusDoneBody": "انتهى وقت التركيز لـ \"{{name}}\" — خذ استراحة.",
+    "breakDoneBody": "انتهت الاستراحة لـ \"{{name}}\" — اكتملت الجلسة."
   }
 }

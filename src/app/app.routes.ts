@@ -39,6 +39,11 @@ export const routes: Routes = [
           import('./features/calendar/calendar-page/calendar-page').then((m) => m.CalendarPage),
       },
       {
+        path: 'stay-focus',
+        loadComponent: () =>
+          import('./features/stay-focus/stay-focus-page/stay-focus-page').then((m) => m.StayFocusPage),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings-page/settings-page').then((m) => m.SettingsPage),

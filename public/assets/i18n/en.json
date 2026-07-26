@@ -13,6 +13,7 @@
     "save": "Save",
     "edit": "Edit",
     "archive": "Archive",
+    "delete": "Delete",
     "retry": "Retry",
     "loading": "Loading..."
   },
@@ -20,6 +21,7 @@
     "dashboard": "Dashboard",
     "habits": "Habits",
     "prayers": "Prayers",
+    "stayFocus": "Stay Focus",
     "statistics": "Statistics",
     "calendar": "Calendar",
     "settings": "Settings",
@@ -81,6 +83,9 @@
     "iconLabel": "Icon",
     "colorLabel": "Color",
     "categoryLabel": "Category",
+    "newCategory": "New",
+    "categoryNameLabel": "Category name",
+    "categoryNamePlaceholder": "e.g. Gaming",
     "scheduleLabel": "Repeat on",
     "reminderLabel": "Reminder (optional)",
     "toggleToday": "Toggle today's completion",
@@ -167,5 +172,25 @@
     "prayerReminderNamed": "{{name}}, it's time for {{prayer}} prayer.",
     "habitReminder": "Don't forget your {{habit}} habit.",
     "habitReminderNamed": "{{name}}, don't forget your {{habit}} habit."
+  },
+  "stayFocus": {
+    "title": "Stay Focus",
+    "add": "New Countdown",
+    "empty": "No countdowns yet. Add one to start focusing.",
+    "limitReached": "You've reached the limit of 20 countdowns.",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Home deep work",
+    "focusMinutesLabel": "Focus minutes",
+    "breakMinutesLabel": "Break minutes",
+    "focusMinutesShort": "{{minutes}}m focus",
+    "breakMinutesShort": "{{minutes}}m break",
+    "focusPhase": "Focus",
+    "breakPhase": "Break",
+    "run": "Run",
+    "stop": "Stop",
+    "deleteConfirmHeader": "Delete countdown?",
+    "deleteConfirmMessage": "Delete \"{{name}}\"? This cannot be undone.",
+    "focusDoneBody": "Focus time is up for \"{{name}}\" — take a break.",
+    "breakDoneBody": "Break's over for \"{{name}}\" — session complete."
   }
 }

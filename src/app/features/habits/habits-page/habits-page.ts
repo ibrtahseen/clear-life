@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 import { Habit as HabitService } from '../../../core/services/habit';
+import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel, HabitHistoryEntry } from '../../../core/models/habit.model';
 import { IsoDate, WeekDay } from '../../../core/models/common.model';
 import { SettingsStore } from '../../../core/services/settings-store';
@@ -37,6 +38,7 @@ type ViewMode = 'all' | 'day';
 })
 export class HabitsPage {
   private readonly habitService = inject(HabitService);
+  private readonly categoryService = inject(CategoryService);
   private readonly settingsStore = inject(SettingsStore);
   private readonly confirm = inject(Confirm);
   private readonly dialog = inject(MatDialog);
@@ -90,6 +92,7 @@ export class HabitsPage {
 
   constructor() {
     void this.habitService.init();
+    void this.categoryService.init();
     void this.loadHistory(this.selectedDate());
   }
 
@@ -173,8 +176,12 @@ export class HabitsPage {
     void this.habitService.reorder(ids);
   }
 
-  categoryLabel(category: HabitModel['category']): string {
-    return this.translate.instant(`habitCategories.${category}`);
+  categoryLabel(habit: HabitModel): string {
+    if (habit.category === 'custom' && habit.customCategoryId != null) {
+      const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
+      if (custom) return custom.name;
+    }
+    return this.translate.instant(`habitCategories.${habit.category}`);
   }
 
   openArchivedHabits(): void {

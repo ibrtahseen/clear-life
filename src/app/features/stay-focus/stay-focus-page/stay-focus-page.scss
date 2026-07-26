@@ -1,0 +1,143 @@
+:host {
+  display: block;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.stay-focus__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.stay-focus__active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1.5rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 22px;
+  text-align: center;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--mat-sys-primary) 20%, transparent), transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.stay-focus__active-phase {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stay-focus__active-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.stay-focus__active-time {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.stay-focus__limit {
+  font-size: 0.85rem;
+  opacity: 0.65;
+  margin: 0 0 1rem;
+}
+
+.stay-focus__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+}
+
+.stay-focus__field {
+  width: 100%;
+}
+
+.stay-focus__minutes-row {
+  display: flex;
+  gap: 0.5rem;
+
+  .stay-focus__field {
+    flex: 1;
+  }
+}
+
+.stay-focus__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.stay-focus__empty {
+  opacity: 0.65;
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.stay-focus__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stay-focus__card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  &--running {
+    border-color: var(--mat-sys-primary);
+  }
+}
+
+.stay-focus__card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stay-focus__card-name {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  unicode-bidi: plaintext;
+}
+
+.stay-focus__card-meta {
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
+.stay-focus__card-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}

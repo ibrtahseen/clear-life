@@ -8,7 +8,8 @@
     <section class="dashboard__countdown">
       <span class="dashboard__countdown-label">{{ 'prayers.nextPrayer' | translate }}</span>
       <span class="dashboard__countdown-name">{{ 'prayers.' + next.name | translate }}</span>
-      <span class="dashboard__countdown-time">{{ formattedTime(next.time) }}</span>
+      <span class="dashboard__countdown-time">{{ countdownLabel() }}</span>
+      <span class="dashboard__countdown-at">{{ formattedTime(next.time) }}</span>
     </section>
   }
 

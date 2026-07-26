@@ -26,6 +26,7 @@ export class Shell {
     { path: '/dashboard', icon: 'home', labelKey: 'nav.dashboard' },
     { path: '/habits', icon: 'check_box', labelKey: 'nav.habits' },
     { path: '/prayers', icon: 'nights_stay', labelKey: 'nav.prayers' },
+    { path: '/stay-focus', icon: 'timer', labelKey: 'nav.stayFocus' },
     { path: '/statistics', icon: 'bar_chart', labelKey: 'nav.statistics' },
     { path: '/calendar', icon: 'calendar_month', labelKey: 'nav.calendar' },
     { path: '/settings', icon: 'settings', labelKey: 'nav.settings' },

@@ -37,3 +37,20 @@ body {
 * {
   box-sizing: border-box;
 }
+
+// Feels more like a native app if taps/long-presses don't select text —
+// text inputs and editable content are excluded so typing/editing still works.
+html,
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input,
+textarea,
+[contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}

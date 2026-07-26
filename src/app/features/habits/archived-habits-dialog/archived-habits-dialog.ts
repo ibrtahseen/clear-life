@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
 import { Habit as HabitService } from '../../../core/services/habit';
+import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel } from '../../../core/models/habit.model';
 import { Confirm } from '../../../shared/services/confirm';
 
@@ -17,13 +18,18 @@ import { Confirm } from '../../../shared/services/confirm';
 })
 export class ArchivedHabitsDialog {
   private readonly habitService = inject(HabitService);
+  private readonly categoryService = inject(CategoryService);
   private readonly confirm = inject(Confirm);
   private readonly translate = inject(TranslateService);
 
   readonly habits = this.habitService.archivedHabits;
 
-  categoryLabel(category: HabitModel['category']): string {
-    return this.translate.instant(`habitCategories.${category}`);
+  categoryLabel(habit: HabitModel): string {
+    if (habit.category === 'custom' && habit.customCategoryId != null) {
+      const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
+      if (custom) return custom.name;
+    }
+    return this.translate.instant(`habitCategories.${habit.category}`);
   }
 
   async restore(habit: HabitModel): Promise<void> {

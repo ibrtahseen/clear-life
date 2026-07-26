@@ -6,6 +6,8 @@ import { PrayerHistoryEntry } from '../models/prayer.model';
 import { QuranProgressState, QuranReadingLogEntry } from '../models/quran.model';
 import { WeeklyStatisticsSnapshot, MonthlyStatisticsSnapshot } from '../models/statistics.model';
 import { NotificationLogEntry, CalendarNote, AppState } from '../models/notification.model';
+import { Category } from '../models/category.model';
+import { FocusCountdown } from '../models/focus.model';
 
 /**
  * Central IndexedDB database for Clear Life.
@@ -26,6 +28,8 @@ export class ClearLifeDatabase extends Dexie {
   notifications!: Table<NotificationLogEntry, number>;
   calendarNotes!: Table<CalendarNote, number>;
   appState!: Table<AppState, number>;
+  categories!: Table<Category, number>;
+  focusCountdowns!: Table<FocusCountdown, number>;
 
   constructor() {
     super('ClearLifeDB');
@@ -43,6 +47,11 @@ export class ClearLifeDatabase extends Dexie {
       notifications: '++id, kind, scheduledAt',
       calendarNotes: '++id, &date',
       appState: 'id',
+    });
+
+    this.version(2).stores({
+      categories: '++id',
+      focusCountdowns: '++id',
     });
   }
 }

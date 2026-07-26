@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -6,10 +6,10 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 
 import { Habit as HabitService } from '../../../core/services/habit';
+import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel } from '../../../core/models/habit.model';
 import { HabitCategory, WeekDay, HABIT_CATEGORIES } from '../../../core/models/common.model';
 
@@ -22,6 +22,31 @@ interface HabitFormValue {
   reminderTime: string;
 }
 
+type PresetCategory = Exclude<HabitCategory, 'custom'>;
+
+/** Fixed icon + color per built-in category — not user-editable. */
+const CATEGORY_PRESET_META: Record<PresetCategory, { icon: string; color: string }> = {
+  health: { icon: 'favorite', color: '#ef4444' },
+  reading: { icon: 'menu_book', color: '#6366f1' },
+  exercise: { icon: 'fitness_center', color: '#22c55e' },
+  study: { icon: 'school', color: '#06b6d4' },
+  work: { icon: 'work', color: '#64748b' },
+  personal: { icon: 'self_improvement', color: '#a855f7' },
+  spirituality: { icon: 'spa', color: '#ec4899' },
+  finance: { icon: 'savings', color: '#f59e0b' },
+  family: { icon: 'family_restroom', color: '#84cc16' },
+  social: { icon: 'groups', color: '#14b8a6' },
+  creativity: { icon: 'palette', color: '#f97316' },
+  sleep: { icon: 'bedtime', color: '#3b82f6' },
+  nutrition: { icon: 'restaurant', color: '#10b981' },
+  mindfulness: { icon: 'psychology', color: '#8b5cf6' },
+};
+
+type CategoryChoice =
+  | { kind: 'preset'; key: PresetCategory; icon: string; color: string; label: string }
+  | { kind: 'custom'; id: number; icon: string; color: string; label: string };
+
+/** Icon/color swatches offered only when creating a new custom category. */
 const ICON_PRESETS = [
   'menu_book',
   'mosque',
@@ -75,7 +100,6 @@ const WEEKDAY_LABELS: Record<WeekDay, string> = {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatIconModule,
   ],
   templateUrl: './habit-form-dialog.html',
@@ -84,6 +108,7 @@ const WEEKDAY_LABELS: Record<WeekDay, string> = {
 })
 export class HabitFormDialog {
   private readonly habitService = inject(HabitService);
+  private readonly categoryService = inject(CategoryService);
   private readonly dialogRef = inject(MatDialogRef<HabitFormDialog, boolean>);
   private readonly data = inject<HabitFormDialogData>(MAT_DIALOG_DATA);
   private readonly translate = inject(TranslateService);
@@ -96,16 +121,35 @@ export class HabitFormDialog {
     Object.keys(WEEKDAY_LABELS) as unknown as WeekDay[]
   ).map((value) => ({ value: Number(value) as WeekDay, label: WEEKDAY_LABELS[Number(value) as WeekDay] }));
 
-  readonly categoryOptions: { label: string; value: HabitCategory }[] = HABIT_CATEGORIES.map((category) => ({
-    label: this.translate.instant(`habitCategories.${category}`),
-    value: category,
+  readonly presetChoices: CategoryChoice[] = HABIT_CATEGORIES.filter(
+    (key): key is PresetCategory => key !== 'custom',
+  ).map((key) => ({
+    kind: 'preset',
+    key,
+    icon: CATEGORY_PRESET_META[key].icon,
+    color: CATEGORY_PRESET_META[key].color,
+    label: this.translate.instant(`habitCategories.${key}`),
   }));
 
-  readonly selectedIcon = signal(this.habitToEdit?.icon ?? ICON_PRESETS[0]);
-  readonly selectedColor = signal(this.habitToEdit?.color ?? COLOR_PRESETS[0]);
-  readonly selectedCategory = signal<HabitCategory>(this.habitToEdit?.category ?? 'personal');
+  readonly categoryChoices = computed<CategoryChoice[]>(() => [
+    ...this.presetChoices,
+    ...this.categoryService.categories().map((c) => ({
+      kind: 'custom' as const,
+      id: c.id!,
+      icon: c.icon,
+      color: c.color,
+      label: c.name,
+    })),
+  ]);
+
+  readonly selectedChoice = signal<CategoryChoice>(this.presetChoices[5]); // 'personal' fallback
   readonly selectedSchedule = signal<WeekDay[]>(this.habitToEdit?.schedule ?? [0, 1, 2, 3, 4, 5, 6]);
   readonly saving = signal(false);
+
+  readonly creatingCategory = signal(false);
+  readonly newCategoryName = signal('');
+  readonly newCategoryIcon = signal(ICON_PRESETS[0]);
+  readonly newCategoryColor = signal(COLOR_PRESETS[0]);
 
   private readonly model_ = signal<HabitFormValue>({
     title: this.habitToEdit?.title ?? '',
@@ -114,6 +158,57 @@ export class HabitFormDialog {
   readonly habitForm = form(this.model_, (path) => {
     required(path.title, { message: 'habits.titleRequired' });
   });
+
+  constructor() {
+    this.selectedChoice.set(this.resolveInitialChoice());
+  }
+
+  private resolveInitialChoice(): CategoryChoice {
+    const habit = this.habitToEdit;
+    if (!habit) return this.presetChoices.find((c) => c.kind === 'preset' && c.key === 'personal')!;
+    if (habit.category !== 'custom') {
+      return this.presetChoices.find((c) => c.kind === 'preset' && c.key === habit.category) ?? this.presetChoices[0];
+    }
+    const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
+    if (custom) {
+      return { kind: 'custom', id: custom.id!, icon: custom.icon, color: custom.color, label: custom.name };
+    }
+    return this.presetChoices[0];
+  }
+
+  selectChoice(choice: CategoryChoice): void {
+    this.selectedChoice.set(choice);
+  }
+
+  isChoiceSelected(choice: CategoryChoice): boolean {
+    const current = this.selectedChoice();
+    if (current.kind === 'preset' && choice.kind === 'preset') return current.key === choice.key;
+    if (current.kind === 'custom' && choice.kind === 'custom') return current.id === choice.id;
+    return false;
+  }
+
+  startNewCategory(): void {
+    this.creatingCategory.set(true);
+    this.newCategoryName.set('');
+    this.newCategoryIcon.set(ICON_PRESETS[0]);
+    this.newCategoryColor.set(COLOR_PRESETS[0]);
+  }
+
+  cancelNewCategory(): void {
+    this.creatingCategory.set(false);
+  }
+
+  async saveNewCategory(): Promise<void> {
+    const name = this.newCategoryName().trim();
+    if (!name) return;
+    const created = await this.categoryService.create({
+      name,
+      icon: this.newCategoryIcon(),
+      color: this.newCategoryColor(),
+    });
+    this.selectedChoice.set({ kind: 'custom', id: created.id!, icon: created.icon, color: created.color, label: created.name });
+    this.creatingCategory.set(false);
+  }
 
   toggleDay(day: WeekDay): void {
     const current = this.selectedSchedule();
@@ -131,11 +226,13 @@ export class HabitFormDialog {
     this.saving.set(true);
     try {
       const values = this.habitForm().value();
+      const choice = this.selectedChoice();
       const payload = {
         title: values.title.trim(),
-        icon: this.selectedIcon(),
-        color: this.selectedColor(),
-        category: this.selectedCategory(),
+        icon: choice.icon,
+        color: choice.color,
+        category: choice.kind === 'preset' ? choice.key : ('custom' as const),
+        customCategoryId: choice.kind === 'custom' ? choice.id : null,
         schedule: this.selectedSchedule(),
         reminderTime: values.reminderTime || null,
         archived: false,

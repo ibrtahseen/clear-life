@@ -35,3 +35,18 @@ export function formatTime(isoTimeOrHHmm: string, use24h = false): string {
   const parsed = isoTimeOrHHmm.includes('T') ? dayjs(isoTimeOrHHmm) : dayjs(`2000-01-01T${isoTimeOrHHmm}`);
   return parsed.format(use24h ? 'HH:mm' : 'h:mm A');
 }
+
+/** "Xh Ym" (or "Ym" alone) until the next occurrence of a "HH:mm" time, relative to `now`. */
+export function countdownToTime(time: string, now: number): string {
+  const [h, m] = time.split(':').map(Number);
+  const target = new Date(now);
+  target.setHours(h, m, 0, 0);
+  if (target.getTime() < now) {
+    target.setDate(target.getDate() + 1);
+  }
+  const diffMs = target.getTime() - now;
+  const totalMinutes = Math.max(0, Math.round(diffMs / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}

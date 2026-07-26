@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, resource, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ import { Quran as QuranService } from '../../../core/services/quran';
 import { Statistics as StatisticsService } from '../../../core/services/statistics';
 import { PRAYER_NAMES, PrayerName } from '../../../core/models/prayer.model';
 import { formatHijri } from '../../../core/utils/hijri.util';
-import { formatTime, todayIso } from '../../../core/utils/date.util';
+import { countdownToTime, formatTime, todayIso } from '../../../core/utils/date.util';
 import {
   QuranReaderDialog,
   QuranReaderDialogData,
@@ -26,7 +26,7 @@ import {
   styleUrl: './dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPage {
+export class DashboardPage implements OnDestroy {
   private readonly userStore = inject(UserStore);
   private readonly settingsStore = inject(SettingsStore);
   private readonly prayerService = inject(PrayerService);
@@ -34,6 +34,7 @@ export class DashboardPage {
   private readonly quranService = inject(QuranService);
   private readonly statisticsService = inject(StatisticsService);
   private readonly dialog = inject(MatDialog);
+  private intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   readonly prayerNames = PRAYER_NAMES;
   readonly userName = computed(() => this.userStore.profile()?.name ?? '');
@@ -50,6 +51,12 @@ export class DashboardPage {
   readonly schedule = this.prayerService.schedule;
   readonly prayerCompletionMap = this.prayerService.completionMap;
   readonly nextPrayer = this.prayerService.nextPrayer;
+
+  readonly now = signal(Date.now());
+  readonly countdownLabel = computed(() => {
+    const next = this.nextPrayer();
+    return next ? countdownToTime(next.time, this.now()) : '';
+  });
 
   readonly todaysHabits = this.habitService.todaysHabits;
   readonly habitCompletionMap = this.habitService.completionMap;
@@ -83,6 +90,11 @@ export class DashboardPage {
     void this.prayerService.loadToday();
     void this.habitService.init();
     void this.quranService.init();
+    this.intervalHandle = setInterval(() => this.now.set(Date.now()), 30_000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalHandle) clearInterval(this.intervalHandle);
   }
 
   isPrayerCompleted(name: PrayerName): boolean {

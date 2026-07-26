@@ -1,4 +1,4 @@
-export type NotificationKind = 'prayer' | 'habit';
+export type NotificationKind = 'prayer' | 'habit' | 'focus';
 
 export interface NotificationLogEntry {
   id?: number;

@@ -6,43 +6,83 @@
     <input matInput [formField]="habitForm.title" [placeholder]="'habits.titlePlaceholder' | translate" />
   </mat-form-field>
 
-  <span class="habit-form__label">{{ 'habits.iconLabel' | translate }}</span>
-  <div class="habit-form__swatches">
-    @for (icon of icons; track icon) {
+  <span class="habit-form__label">{{ 'habits.categoryLabel' | translate }}</span>
+  <div class="habit-form__category-grid">
+    @for (choice of categoryChoices(); track choice.kind === 'preset' ? choice.key : choice.id) {
       <button
         type="button"
-        class="habit-form__icon-swatch"
-        [class.habit-form__icon-swatch--active]="selectedIcon() === icon"
-        [attr.aria-label]="icon"
-        (click)="selectedIcon.set(icon)"
+        class="habit-form__category-chip"
+        [class.habit-form__category-chip--active]="isChoiceSelected(choice)"
+        (click)="selectChoice(choice)"
       >
-        <mat-icon>{{ icon }}</mat-icon>
+        <span class="habit-form__category-icon" [style.background]="choice.color + '22'" [style.color]="choice.color">
+          <mat-icon>{{ choice.icon }}</mat-icon>
+        </span>
+        <span>{{ choice.label }}</span>
       </button>
     }
+    <button type="button" class="habit-form__category-chip habit-form__category-chip--add" (click)="startNewCategory()">
+      <span class="habit-form__category-icon habit-form__category-icon--add">
+        <mat-icon>add</mat-icon>
+      </span>
+      <span>{{ 'habits.newCategory' | translate }}</span>
+    </button>
   </div>
 
-  <span class="habit-form__label">{{ 'habits.colorLabel' | translate }}</span>
-  <div class="habit-form__swatches">
-    @for (color of colors; track color) {
-      <button
-        type="button"
-        class="habit-form__color-swatch"
-        [class.habit-form__color-swatch--active]="selectedColor() === color"
-        [style.background]="color"
-        [attr.aria-label]="color"
-        (click)="selectedColor.set(color)"
-      ></button>
-    }
-  </div>
+  @if (creatingCategory()) {
+    <div class="habit-form__new-category">
+      <mat-form-field class="habit-form__field" appearance="outline">
+        <mat-label>{{ 'habits.categoryNameLabel' | translate }}</mat-label>
+        <input
+          matInput
+          [ngModel]="newCategoryName()"
+          (ngModelChange)="newCategoryName.set($event)"
+          [placeholder]="'habits.categoryNamePlaceholder' | translate"
+        />
+      </mat-form-field>
 
-  <mat-form-field class="habit-form__field" appearance="outline">
-    <mat-label>{{ 'habits.categoryLabel' | translate }}</mat-label>
-    <mat-select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
-      @for (option of categoryOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+      <span class="habit-form__label">{{ 'habits.iconLabel' | translate }}</span>
+      <div class="habit-form__swatches">
+        @for (icon of icons; track icon) {
+          <button
+            type="button"
+            class="habit-form__icon-swatch"
+            [class.habit-form__icon-swatch--active]="newCategoryIcon() === icon"
+            [attr.aria-label]="icon"
+            (click)="newCategoryIcon.set(icon)"
+          >
+            <mat-icon>{{ icon }}</mat-icon>
+          </button>
+        }
+      </div>
+
+      <span class="habit-form__label">{{ 'habits.colorLabel' | translate }}</span>
+      <div class="habit-form__swatches">
+        @for (color of colors; track color) {
+          <button
+            type="button"
+            class="habit-form__color-swatch"
+            [class.habit-form__color-swatch--active]="newCategoryColor() === color"
+            [style.background]="color"
+            [attr.aria-label]="color"
+            (click)="newCategoryColor.set(color)"
+          ></button>
+        }
+      </div>
+
+      <div class="habit-form__new-category-actions">
+        <button mat-button type="button" (click)="cancelNewCategory()">{{ 'common.cancel' | translate }}</button>
+        <button
+          mat-flat-button
+          type="button"
+          [disabled]="!newCategoryName().trim()"
+          (click)="saveNewCategory()"
+        >
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </div>
+  }
 
   <span class="habit-form__label">{{ 'habits.scheduleLabel' | translate }}</span>
   <div class="habit-form__weekdays">

@@ -4,6 +4,7 @@ import { SettingsStore } from './settings-store';
 import { Prayer } from './prayer';
 import { Habit } from './habit';
 import { NotificationRepository } from '../data/repositories/notification-repository';
+import { NotificationKind } from '../models/notification.model';
 import { I18n } from './i18n';
 import { formatTime } from '../utils/date.util';
 
@@ -110,7 +111,8 @@ export class Notification {
       : this.i18n.instant('notifications.habitReminder', { habit: title });
   }
 
-  private async fire(key: string, kind: 'prayer' | 'habit', refId: string, body: string): Promise<void> {
+  /** Public so other features (e.g. Stay Focus) can reuse the same permission-gated notification path. */
+  async fire(key: string, kind: NotificationKind, refId: string, body: string): Promise<void> {
     if (this.notifiedKeys.has(key)) return;
     this.notifiedKeys.add(key);
 
