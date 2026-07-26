@@ -1,21 +1,19 @@
 import { Service, inject, signal } from '@angular/core';
 import { QuranRepository } from '../data/repositories/quran-repository';
-import { QURAN_TOTAL_PAGES, PAGES_PER_PRAYER, QuranProgressState } from '../models/quran.model';
+import { QURAN_TOTAL_PAGES, QuranProgressState } from '../models/quran.model';
 import { IsoDate } from '../models/common.model';
 import { PRAYER_NAMES, PrayerName } from '../models/prayer.model';
+import { SettingsStore } from './settings-store';
 
 export interface PrayerPageRange {
   start: number;
   end: number;
 }
 
-function nextPage(page: number): number {
-  return page >= QURAN_TOTAL_PAGES ? 1 : page + 1;
-}
-
 @Service()
 export class Quran {
   private readonly quranRepository = inject(QuranRepository);
+  private readonly settingsStore = inject(SettingsStore);
 
   readonly progress = signal<QuranProgressState>({
     id: 1,
@@ -29,16 +27,36 @@ export class Quran {
     this.progress.set(progress);
   }
 
-  /** Awards PAGES_PER_PRAYER sequential pages for a completed prayer, wrapping after 604. */
-  async awardPagesForPrayer(date: IsoDate, prayerName: PrayerName): Promise<void> {
-    const current = this.progress();
-    let cursor = current.currentPage;
+  private pagesPerPrayer(): number {
+    return Math.max(1, this.settingsStore.settings().quranPagePerPry || 1);
+  }
+
+  private buildPages(startCursor: number, count: number): { pages: number[]; cursor: number; wraps: number } {
+    let cursor = startCursor;
     const pages: number[] = [];
     let wraps = 0;
-    for (let i = 0; i < PAGES_PER_PRAYER; i++) {
+    for (let i = 0; i < count; i++) {
       pages.push(cursor);
       cursor = cursor === QURAN_TOTAL_PAGES ? (wraps++, 1) : cursor + 1;
     }
+    return { pages, cursor, wraps };
+  }
+
+  /** Expands a possibly-wrapping start/end range (as stored in the log) into the full list of pages. */
+  expandRange(range: PrayerPageRange): number[] {
+    const pages: number[] = [range.start];
+    let cursor = range.start;
+    while (cursor !== range.end) {
+      cursor = cursor === QURAN_TOTAL_PAGES ? 1 : cursor + 1;
+      pages.push(cursor);
+    }
+    return pages;
+  }
+
+  /** Awards the configured number of sequential pages for a completed prayer, wrapping after 604. */
+  async awardPagesForPrayer(date: IsoDate, prayerName: PrayerName): Promise<void> {
+    const current = this.progress();
+    const { pages, cursor, wraps } = this.buildPages(current.currentPage, this.pagesPerPrayer());
 
     await this.quranRepository.addLogEntry({
       date,
@@ -80,9 +98,10 @@ export class Quran {
 
   /** Human-readable label for the next pages that will be awarded, e.g. "603-604" or "604-1". */
   currentRangeLabel(): string {
-    const start = this.progress().currentPage;
-    const end = nextPage(start);
-    return `${start}-${end}`;
+    const { pages } = this.buildPages(this.progress().currentPage, this.pagesPerPrayer());
+    const start = pages[0];
+    const end = pages[pages.length - 1];
+    return start === end ? `${start}` : `${start}-${end}`;
   }
 
   /**
@@ -98,6 +117,7 @@ export class Quran {
     const log = await this.quranRepository.getLog();
     const result: Partial<Record<PrayerName, PrayerPageRange>> = {};
     let cursor = this.progress().currentPage;
+    const count = this.pagesPerPrayer();
 
     for (const name of PRAYER_NAMES) {
       if (completedPrayers.has(name)) {
@@ -108,11 +128,8 @@ export class Quran {
         continue;
       }
 
-      const pages: number[] = [];
-      for (let i = 0; i < PAGES_PER_PRAYER; i++) {
-        pages.push(cursor);
-        cursor = cursor === QURAN_TOTAL_PAGES ? 1 : cursor + 1;
-      }
+      const { pages, cursor: nextCursor } = this.buildPages(cursor, count);
+      cursor = nextCursor;
       result[name] = { start: pages[0], end: pages[pages.length - 1] };
     }
 

@@ -103,7 +103,7 @@ export class PrayersPage implements OnDestroy {
     if (!range) return;
 
     const data: QuranReaderDialogData = {
-      pages: [range.start, range.end],
+      pages: this.quranService.expandRange(range),
       prayerName: name,
       alreadyCompleted: this.isCompleted(name),
     };

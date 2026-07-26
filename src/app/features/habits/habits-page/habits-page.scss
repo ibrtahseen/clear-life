@@ -112,11 +112,16 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    unicode-bidi: plaintext;
   }
 }
 
 .habits__category-tag {
   flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 0.7rem;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
@@ -126,6 +131,7 @@
 
 .habits__days {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.3rem;
   margin-top: 0.4rem;
 }

@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,6 +37,7 @@ interface StepOption<T> {
     MatFormFieldModule,
     MatInputModule,
     MatButtonToggleModule,
+    MatSelectModule,
     MatSlideToggleModule,
     MatAutocompleteModule,
     MatIconModule,
@@ -62,6 +64,10 @@ export class SettingsPage {
     required(path.name, { message: 'settings.nameRequired' });
   });
   readonly nameDirty = signal(false);
+
+  readonly quranPagesModel = signal(this.settings().quranPagePerPry);
+  readonly quranPagesDirty = signal(false);
+  readonly quranPageOptions = Array.from({ length: 20 }, (_, i) => i + 1);
 
   readonly languageOptions: StepOption<Language>[] = [
     { label: 'English', value: 'en' },
@@ -127,8 +133,14 @@ export class SettingsPage {
     await this.settingsStore.update({ firstDayOfWeek: day });
   }
 
-  async setQuranPagesPerPrayer(pages: number): Promise<void> {
-    await this.settingsStore.update({ quranPagePerPry: pages });
+  onQuranPagesInput(pages: number): void {
+    this.quranPagesModel.set(pages);
+    this.quranPagesDirty.set(true);
+  }
+
+  async saveQuranPages(): Promise<void> {
+    await this.settingsStore.update({ quranPagePerPry: this.quranPagesModel() });
+    this.quranPagesDirty.set(false);
   }
 
   async togglePrayerReminders(enabled: boolean): Promise<void> {

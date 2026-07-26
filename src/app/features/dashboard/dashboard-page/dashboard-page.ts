@@ -109,7 +109,7 @@ export class DashboardPage {
     }
 
     const data: QuranReaderDialogData = {
-      pages: [range.start, range.end],
+      pages: this.quranService.expandRange(range),
       prayerName: name,
       alreadyCompleted: false,
     };

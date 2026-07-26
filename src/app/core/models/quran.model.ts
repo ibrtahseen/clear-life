@@ -2,7 +2,6 @@ import { IsoDate } from './common.model';
 import { PrayerName } from './prayer.model';
 
 export const QURAN_TOTAL_PAGES = 604;
-export const PAGES_PER_PRAYER = 2;
 
 export interface QuranProgressState {
   /** Singleton row id, always 1 */
