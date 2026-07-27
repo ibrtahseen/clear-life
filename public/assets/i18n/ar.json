@@ -88,6 +88,8 @@
     "categoryNamePlaceholder": "مثال: الألعاب",
     "scheduleLabel": "التكرار في",
     "reminderLabel": "تذكير (اختياري)",
+    "weekdayLetters": { "0": "ح", "1": "ن", "2": "ث", "3": "ر", "4": "خ", "5": "ج", "6": "س" },
+    "weekdayShort": { "0": "أحد", "1": "إثنين", "2": "ثلاثاء", "3": "أربعاء", "4": "خميس", "5": "جمعة", "6": "سبت" },
     "toggleToday": "تبديل إنجاز اليوم",
     "archiveConfirmHeader": "أرشفة العادة",
     "archiveConfirmMessage": "أرشفة \"{{title}}\"؟ سيتم الاحتفاظ بسجلها.",
@@ -172,6 +174,14 @@
     "prayerReminderNamed": "{{name}}، حان وقت صلاة {{prayer}}.",
     "habitReminder": "لا تنسَ عادة {{habit}}.",
     "habitReminderNamed": "{{name}}، لا تنسَ عادة {{habit}}."
+  },
+  "timePicker": {
+    "hour": "الساعة",
+    "minute": "الدقيقة",
+    "period": "صباحًا أو مساءً",
+    "am": "ص",
+    "pm": "م",
+    "clear": "إزالة التذكير"
   },
   "stayFocus": {
     "title": "التركيز",

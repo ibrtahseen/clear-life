@@ -13,6 +13,19 @@
           inventory_2
         </mat-icon>
       </button>
+      @if (viewMode() === 'day' && displayedHabits().length > 1) {
+        <button
+          mat-icon-button
+          type="button"
+          class="habits__reorder-toggle"
+          [class.habits__reorder-toggle--active]="reorderMode()"
+          [attr.aria-label]="'habits.reorder' | translate"
+          [title]="'habits.reorder' | translate"
+          (click)="toggleReorderMode()"
+        >
+          <mat-icon>swap_vert</mat-icon>
+        </button>
+      }
       <button mat-flat-button type="button" (click)="openCreateDialog()">
         <mat-icon>add</mat-icon>
         {{ 'habits.add' | translate }}
@@ -46,59 +59,82 @@
   @if (displayedHabits().length === 0) {
     <p class="habits__empty">{{ 'habits.empty' | translate }}</p>
   } @else {
-    <div class="habits__list" cdkDropList [cdkDropListDisabled]="viewMode() !== 'all'" (cdkDropListDropped)="onDrop($event)">
+    <div
+      class="habits__list"
+      cdkDropList
+      [cdkDropListDisabled]="!reorderMode()"
+      (cdkDropListDropped)="onDrop($event)"
+    >
       @for (habit of displayedHabits(); track habit.id) {
-        <article class="habits__card" cdkDrag [cdkDragDisabled]="viewMode() !== 'all'">
-          @if (viewMode() === 'all') {
-            <div class="habits__drag-handle" cdkDragHandle [attr.aria-label]="'habits.reorder' | translate">
-              <mat-icon>drag_indicator</mat-icon>
+        <div class="habits__card-wrap">
+          @if (!reorderMode()) {
+            <div
+              class="habits__archive-hint"
+              [class.habits__archive-hint--left]="swipeHintSide(habit) === 'left'"
+              [class.habits__archive-hint--right]="swipeHintSide(habit) === 'right'"
+              [style.opacity]="swipeHintOpacity(habit)"
+            >
+              <mat-icon>archive</mat-icon>
             </div>
           }
 
-          <div class="habits__icon" [style.background]="habit.color + '22'" [style.color]="habit.color">
-            <mat-icon>{{ habit.icon }}</mat-icon>
-          </div>
-
-          <div class="habits__info">
-            <div class="habits__title-row">
-              <h3>{{ habit.title }}</h3>
-              <span class="habits__category-tag">{{ categoryLabel(habit) }}</span>
-            </div>
-          </div>
-
-          <div class="habits__actions">
-            @if (viewMode() === 'day') {
-              <button
-                type="button"
-                class="habits__toggle"
-                [class.habits__toggle--done]="isCompletedSelected(habit)"
-                [disabled]="!isSelectedToday()"
-                [attr.aria-label]="'habits.toggleToday' | translate"
-                (click)="toggle(habit)"
-              >
-                @if (isCompletedSelected(habit)) {
-                  <mat-icon>check</mat-icon>
-                }
-              </button>
+          <article
+            class="habits__card"
+            cdkDrag
+            [cdkDragDisabled]="!reorderMode()"
+            [cdkDragLockAxis]="'y'"
+            [class.habits__card--swiping]="isSwiping(habit)"
+            [style.transform]="swipeTransform(habit)"
+            (pointerdown)="onSwipeStart($event, habit)"
+            (pointermove)="onSwipeMove($event, habit)"
+            (pointerup)="onSwipeEnd($event, habit)"
+            (pointercancel)="onSwipeEnd($event, habit)"
+          >
+            @if (reorderMode()) {
+              <div class="habits__drag-handle" cdkDragHandle [attr.aria-label]="'habits.reorder' | translate">
+                <mat-icon>drag_indicator</mat-icon>
+              </div>
             }
-            <button
-              mat-icon-button
-              type="button"
-              [attr.aria-label]="'common.edit' | translate"
-              (click)="openEditDialog(habit)"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              type="button"
-              [attr.aria-label]="'common.archive' | translate"
-              (click)="confirmArchive(habit)"
-            >
-              <mat-icon>archive</mat-icon>
-            </button>
-          </div>
-        </article>
+
+            <div class="habits__icon" [style.background]="habit.color + '22'" [style.color]="habit.color">
+              <mat-icon>{{ habit.icon }}</mat-icon>
+            </div>
+
+            <div class="habits__info">
+              <div class="habits__title-row">
+                <h3>{{ habit.title }}</h3>
+                <span class="habits__category-tag">{{ categoryLabel(habit) }}</span>
+              </div>
+            </div>
+
+            @if (!reorderMode()) {
+              <div class="habits__actions">
+                @if (viewMode() === 'day') {
+                  <button
+                    type="button"
+                    class="habits__toggle"
+                    [class.habits__toggle--done]="isCompletedSelected(habit)"
+                    [disabled]="!isSelectedToday()"
+                    [attr.aria-label]="'habits.toggleToday' | translate"
+                    (click)="toggle(habit)"
+                  >
+                    @if (isCompletedSelected(habit)) {
+                      <mat-icon>check</mat-icon>
+                    }
+                  </button>
+                }
+                <button
+                  mat-icon-button
+                  type="button"
+                  [attr.aria-label]="'common.edit' | translate"
+                  (click)="openEditDialog(habit)"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+            }
+          </article>
+        </div>
       }
     </div>
   }

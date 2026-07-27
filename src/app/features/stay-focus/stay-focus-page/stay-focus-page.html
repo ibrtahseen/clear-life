@@ -8,11 +8,29 @@
   </header>
 
   @if (activeCountdown(); as running) {
-    <section class="stay-focus__active">
-      <span class="stay-focus__active-phase">{{ phaseLabel() }}</span>
+    <section class="stay-focus__active" [class.stay-focus__active--break]="phaseIsBreak()">
       <span class="stay-focus__active-name">{{ running.name }}</span>
-      <span class="stay-focus__active-time">{{ remainingLabel() }}</span>
-      <button mat-stroked-button type="button" (click)="stop()">
+
+      <div class="stay-focus__ring">
+        <svg viewBox="0 0 120 120" class="stay-focus__ring-svg">
+          <circle class="stay-focus__ring-track" cx="60" cy="60" r="54" />
+          <circle
+            class="stay-focus__ring-progress"
+            cx="60"
+            cy="60"
+            r="54"
+            [style.stroke-dasharray]="ringCircumference"
+            [style.stroke-dashoffset]="ringOffset()"
+          />
+        </svg>
+        <div class="stay-focus__ring-center">
+          <span class="stay-focus__active-phase">{{ phaseLabel() }}</span>
+          <span class="stay-focus__active-time">{{ remainingLabel() }}</span>
+        </div>
+      </div>
+
+      <button mat-flat-button type="button" class="stay-focus__stop-btn" (click)="stop()">
+        <mat-icon>stop</mat-icon>
         {{ 'stayFocus.stop' | translate }}
       </button>
     </section>

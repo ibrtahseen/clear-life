@@ -41,6 +41,25 @@ export class StayFocusPage {
     return `${m}:${String(s).padStart(2, '0')}`;
   });
 
+  private readonly totalSeconds = computed(() => {
+    const active = this.active();
+    const countdown = this.activeCountdown();
+    if (!active || !countdown) return 0;
+    const minutes = active.phase === 'focus' ? countdown.focusMinutes : countdown.breakMinutes;
+    return minutes * 60;
+  });
+
+  /** 0 (just started) to 1 (finished) — drives the progress ring. */
+  readonly progressFraction = computed(() => {
+    const total = this.totalSeconds();
+    if (!total) return 0;
+    return 1 - this.focusTimer.remainingSeconds() / total;
+  });
+
+  readonly ringCircumference = 2 * Math.PI * 54;
+
+  readonly ringOffset = computed(() => this.ringCircumference * (1 - this.progressFraction()));
+
   readonly showAddForm = signal(false);
   readonly newName = signal('');
   readonly newFocusMinutes = signal(25);
@@ -58,6 +77,10 @@ export class StayFocusPage {
     const active = this.active();
     if (!active) return '';
     return this.translate.instant(active.phase === 'focus' ? 'stayFocus.focusPhase' : 'stayFocus.breakPhase');
+  }
+
+  phaseIsBreak(): boolean {
+    return this.active()?.phase === 'break';
   }
 
   async run(countdown: FocusCountdown): Promise<void> {

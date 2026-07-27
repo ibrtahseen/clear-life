@@ -92,7 +92,52 @@
   gap: 0.75rem;
 }
 
+.habits__reorder-toggle {
+  color: inherit;
+  opacity: 0.7;
+
+  &--active {
+    opacity: 1;
+    color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+  }
+}
+
+.habits__card-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+.habits__archive-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, #ef4444 20%, transparent);
+  color: #ef4444;
+  border-radius: 18px;
+  pointer-events: none;
+
+  .mat-icon {
+    font-size: 1.4rem;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  &--left {
+    justify-content: flex-start;
+    padding-inline-start: 1.5rem;
+  }
+
+  &--right {
+    justify-content: flex-end;
+    padding-inline-end: 1.5rem;
+  }
+}
+
 .habits__card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -100,7 +145,13 @@
   border-radius: 18px;
   background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
   border: 1px solid var(--mat-sys-outline-variant);
-  transition: opacity 0.2s ease;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+  touch-action: pan-y;
+  user-select: none;
+
+  &--swiping {
+    transition: none;
+  }
 
   &.cdk-drag-preview {
     box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3);

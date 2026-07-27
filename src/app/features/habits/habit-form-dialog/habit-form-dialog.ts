@@ -12,6 +12,7 @@ import { Habit as HabitService } from '../../../core/services/habit';
 import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel } from '../../../core/models/habit.model';
 import { HabitCategory, WeekDay, HABIT_CATEGORIES } from '../../../core/models/common.model';
+import { TimePicker } from '../../../shared/components/time-picker/time-picker';
 
 export interface HabitFormDialogData {
   habit: HabitModel | null;
@@ -19,7 +20,6 @@ export interface HabitFormDialogData {
 
 interface HabitFormValue {
   title: string;
-  reminderTime: string;
 }
 
 type PresetCategory = Exclude<HabitCategory, 'custom'>;
@@ -80,16 +80,6 @@ const ICON_PRESETS = [
 
 const COLOR_PRESETS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899', '#84cc16'];
 
-const WEEKDAY_LABELS: Record<WeekDay, string> = {
-  0: 'S',
-  1: 'M',
-  2: 'T',
-  3: 'W',
-  4: 'T',
-  5: 'F',
-  6: 'S',
-};
-
 @Component({
   selector: 'app-habit-form-dialog',
   imports: [
@@ -101,6 +91,7 @@ const WEEKDAY_LABELS: Record<WeekDay, string> = {
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    TimePicker,
   ],
   templateUrl: './habit-form-dialog.html',
   styleUrl: './habit-form-dialog.scss',
@@ -117,9 +108,10 @@ export class HabitFormDialog {
 
   readonly icons = ICON_PRESETS;
   readonly colors = COLOR_PRESETS;
-  readonly weekDays: { value: WeekDay; label: string }[] = (
-    Object.keys(WEEKDAY_LABELS) as unknown as WeekDay[]
-  ).map((value) => ({ value: Number(value) as WeekDay, label: WEEKDAY_LABELS[Number(value) as WeekDay] }));
+  readonly weekDays: { value: WeekDay; label: string }[] = ([0, 1, 2, 3, 4, 5, 6] as WeekDay[]).map((value) => ({
+    value,
+    label: this.translate.instant(`habits.weekdayLetters.${value}`),
+  }));
 
   readonly presetChoices: CategoryChoice[] = HABIT_CATEGORIES.filter(
     (key): key is PresetCategory => key !== 'custom',
@@ -151,9 +143,10 @@ export class HabitFormDialog {
   readonly newCategoryIcon = signal(ICON_PRESETS[0]);
   readonly newCategoryColor = signal(COLOR_PRESETS[0]);
 
+  readonly reminderTime = signal<string | null>(this.habitToEdit?.reminderTime ?? null);
+
   private readonly model_ = signal<HabitFormValue>({
     title: this.habitToEdit?.title ?? '',
-    reminderTime: this.habitToEdit?.reminderTime ?? '',
   });
   readonly habitForm = form(this.model_, (path) => {
     required(path.title, { message: 'habits.titleRequired' });
@@ -234,7 +227,7 @@ export class HabitFormDialog {
         category: choice.kind === 'preset' ? choice.key : ('custom' as const),
         customCategoryId: choice.kind === 'custom' ? choice.id : null,
         schedule: this.selectedSchedule(),
-        reminderTime: values.reminderTime || null,
+        reminderTime: this.reminderTime(),
         archived: false,
       };
 

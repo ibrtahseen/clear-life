@@ -10,18 +10,8 @@
   margin-top: 0.6rem;
 }
 
-.habit-form__field,
-.habit-form__time {
+.habit-form__field {
   width: 100%;
-}
-
-.habit-form__time {
-  padding: 0.55rem 0.75rem;
-  border-radius: 10px;
-  border: 1px solid var(--mat-sys-outline-variant);
-  background: transparent;
-  color: inherit;
-  font: inherit;
 }
 
 .habit-form__swatches {

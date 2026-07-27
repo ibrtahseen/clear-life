@@ -26,32 +26,95 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 1.5rem 1rem;
+  gap: 1rem;
+  padding: 2rem 1.5rem 1.75rem;
   margin-bottom: 1.25rem;
-  border-radius: 22px;
+  border-radius: 28px;
   text-align: center;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--mat-sys-primary) 20%, transparent), transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--mat-sys-primary) 22%, transparent), transparent 70%);
   border: 1px solid var(--mat-sys-outline-variant);
-}
+  transition: background 0.3s ease;
 
-.stay-focus__active-phase {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  &--break {
+    background: linear-gradient(160deg, color-mix(in srgb, #22c55e 22%, transparent), transparent 70%);
+  }
 }
 
 .stay-focus__active-name {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  unicode-bidi: plaintext;
+}
+
+.stay-focus__ring {
+  position: relative;
+  width: 15rem;
+  height: 15rem;
+  max-width: 80vw;
+  max-height: 80vw;
+}
+
+.stay-focus__ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.stay-focus__ring-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+  stroke-width: 8;
+}
+
+.stay-focus__ring-progress {
+  fill: none;
+  stroke: var(--mat-sys-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.stay-focus__active--break .stay-focus__ring-progress {
+  stroke: #22c55e;
+}
+
+.stay-focus__ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.stay-focus__active-phase {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .stay-focus__active-time {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.75rem;
+  font-weight: 800;
   color: var(--mat-sys-primary);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.stay-focus__active--break .stay-focus__active-time {
+  color: #22c55e;
+}
+
+.stay-focus__stop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-inline: 1.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
 }
 
 .stay-focus__limit {

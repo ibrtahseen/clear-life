@@ -17,17 +17,10 @@ import { Confirm } from '../../../shared/services/confirm';
 import { HabitFormDialog, HabitFormDialogData } from '../habit-form-dialog/habit-form-dialog';
 import { ArchivedHabitsDialog } from '../archived-habits-dialog/archived-habits-dialog';
 
-const WEEKDAY_SHORT: Record<WeekDay, string> = {
-  0: 'Sun',
-  1: 'Mon',
-  2: 'Tue',
-  3: 'Wed',
-  4: 'Thu',
-  5: 'Fri',
-  6: 'Sat',
-};
-
 type ViewMode = 'all' | 'day';
+
+/** Horizontal drag distance (px) past which a card release triggers archive. */
+const SWIPE_ARCHIVE_THRESHOLD = 90;
 
 @Component({
   selector: 'app-habits-page',
@@ -51,6 +44,14 @@ export class HabitsPage {
   readonly viewMode = signal<ViewMode>('day');
   readonly selectedDate = signal<IsoDate>(this.todayIsoDate);
   private readonly selectedHistory = signal<HabitHistoryEntry[]>([]);
+
+  /** When on, the day list becomes drag-reorderable instead of swipe-to-archive. */
+  readonly reorderMode = signal(false);
+
+  private readonly swipingHabitId = signal<number | null>(null);
+  private readonly swipeDeltaX = signal(0);
+  private swipePointerId: number | null = null;
+  private swipeStartX = 0;
 
   readonly weekDates = computed<IsoDate[]>(() => {
     const firstDayOfWeek = this.settingsStore.settings().firstDayOfWeek;
@@ -103,15 +104,21 @@ export class HabitsPage {
   selectDay(date: IsoDate): void {
     this.viewMode.set('day');
     this.selectedDate.set(date);
+    this.reorderMode.set(false);
     void this.loadHistory(date);
   }
 
   selectAll(): void {
     this.viewMode.set('all');
+    this.reorderMode.set(false);
+  }
+
+  toggleReorderMode(): void {
+    this.reorderMode.update((on) => !on);
   }
 
   weekdayLabel(date: IsoDate): string {
-    return WEEKDAY_SHORT[dayjs(date).day() as WeekDay];
+    return this.translate.instant(`habits.weekdayShort.${dayjs(date).day()}`);
   }
 
   dayNumber(date: IsoDate): number {
@@ -167,13 +174,69 @@ export class HabitsPage {
     }
   }
 
-  /** Reordering only applies in "all" view, where the visible list matches the full stored order. */
+  /**
+   * Reordering happens on the day-filtered subset (`displayedHabits`), but persisted order
+   * spans every habit — so the subset's new relative order is spliced back into the full
+   * list at the positions its members already occupied, leaving other habits untouched.
+   */
   onDrop(event: CdkDragDrop<HabitModel[]>): void {
-    if (this.viewMode() !== 'all' || event.previousIndex === event.currentIndex) return;
-    const reordered = [...this.habits()];
-    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
-    const ids = reordered.map((h) => h.id).filter((id): id is number => id != null);
+    if (!this.reorderMode() || event.previousIndex === event.currentIndex) return;
+    const subset = this.displayedHabits();
+    const reorderedSubset = [...subset];
+    moveItemInArray(reorderedSubset, event.previousIndex, event.currentIndex);
+
+    const subsetIds = new Set(subset.map((h) => h.id));
+    let cursor = 0;
+    const merged = this.habits().map((h) => (subsetIds.has(h.id) ? reorderedSubset[cursor++] : h));
+
+    const ids = merged.map((h) => h.id).filter((id): id is number => id != null);
     void this.habitService.reorder(ids);
+  }
+
+  private resetSwipe(): void {
+    this.swipingHabitId.set(null);
+    this.swipeDeltaX.set(0);
+    this.swipePointerId = null;
+  }
+
+  onSwipeStart(event: PointerEvent, habit: HabitModel): void {
+    if (this.reorderMode() || habit.id == null) return;
+    this.swipeStartX = event.clientX;
+    this.swipePointerId = event.pointerId;
+    this.swipingHabitId.set(habit.id);
+    this.swipeDeltaX.set(0);
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+  }
+
+  onSwipeMove(event: PointerEvent, habit: HabitModel): void {
+    if (this.swipingHabitId() !== habit.id || this.swipePointerId !== event.pointerId) return;
+    this.swipeDeltaX.set(event.clientX - this.swipeStartX);
+  }
+
+  async onSwipeEnd(event: PointerEvent, habit: HabitModel): Promise<void> {
+    if (this.swipingHabitId() !== habit.id || this.swipePointerId !== event.pointerId) return;
+    const delta = this.swipeDeltaX();
+    this.resetSwipe();
+    if (Math.abs(delta) > SWIPE_ARCHIVE_THRESHOLD) {
+      await this.confirmArchive(habit);
+    }
+  }
+
+  isSwiping(habit: HabitModel): boolean {
+    return habit.id != null && this.swipingHabitId() === habit.id;
+  }
+
+  swipeTransform(habit: HabitModel): string {
+    return this.isSwiping(habit) ? `translateX(${this.swipeDeltaX()}px)` : '';
+  }
+
+  swipeHintOpacity(habit: HabitModel): number {
+    if (!this.isSwiping(habit)) return 0;
+    return Math.min(1, Math.abs(this.swipeDeltaX()) / SWIPE_ARCHIVE_THRESHOLD);
+  }
+
+  swipeHintSide(habit: HabitModel): 'left' | 'right' {
+    return this.isSwiping(habit) && this.swipeDeltaX() < 0 ? 'right' : 'left';
   }
 
   categoryLabel(habit: HabitModel): string {

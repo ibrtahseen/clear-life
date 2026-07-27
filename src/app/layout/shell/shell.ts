@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
-import { UserStore } from '../../core/services/user-store';
 import { I18n } from '../../core/services/i18n';
 
 interface NavItem {
@@ -19,7 +18,6 @@ interface NavItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Shell {
-  private readonly userStore = inject(UserStore);
   private readonly i18n = inject(I18n);
 
   readonly navItems: NavItem[] = [
@@ -32,6 +30,5 @@ export class Shell {
     { path: '/settings', icon: 'settings', labelKey: 'nav.settings' },
   ];
 
-  readonly greetingName = computed(() => this.userStore.profile()?.name ?? '');
   readonly isRtl = computed(() => this.i18n.isRtl());
 }

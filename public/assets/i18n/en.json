@@ -88,6 +88,8 @@
     "categoryNamePlaceholder": "e.g. Gaming",
     "scheduleLabel": "Repeat on",
     "reminderLabel": "Reminder (optional)",
+    "weekdayLetters": { "0": "S", "1": "M", "2": "T", "3": "W", "4": "T", "5": "F", "6": "S" },
+    "weekdayShort": { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" },
     "toggleToday": "Toggle today's completion",
     "archiveConfirmHeader": "Archive habit",
     "archiveConfirmMessage": "Archive \"{{title}}\"? Its history will be preserved.",
@@ -172,6 +174,14 @@
     "prayerReminderNamed": "{{name}}, it's time for {{prayer}} prayer.",
     "habitReminder": "Don't forget your {{habit}} habit.",
     "habitReminderNamed": "{{name}}, don't forget your {{habit}} habit."
+  },
+  "timePicker": {
+    "hour": "Hour",
+    "minute": "Minute",
+    "period": "AM or PM",
+    "am": "AM",
+    "pm": "PM",
+    "clear": "Clear reminder"
   },
   "stayFocus": {
     "title": "Stay Focus",

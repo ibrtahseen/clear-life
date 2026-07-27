@@ -98,8 +98,8 @@
     }
   </div>
 
-  <label class="habit-form__label" for="habit-reminder">{{ 'habits.reminderLabel' | translate }}</label>
-  <input id="habit-reminder" type="time" class="habit-form__time" [formField]="habitForm.reminderTime" />
+  <span class="habit-form__label">{{ 'habits.reminderLabel' | translate }}</span>
+  <app-time-picker [value]="reminderTime()" (valueChange)="reminderTime.set($event)" />
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
