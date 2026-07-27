@@ -18,10 +18,10 @@
     "loading": "Loading..."
   },
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Home",
     "habits": "Habits",
     "prayers": "Prayers",
-    "stayFocus": "Stay Focus",
+    "stayFocus": "Focus",
     "statistics": "Statistics",
     "calendar": "Calendar",
     "settings": "Settings",
