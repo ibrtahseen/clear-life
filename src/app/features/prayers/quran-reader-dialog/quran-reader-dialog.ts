@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,6 +30,8 @@ export class QuranReaderDialog {
   private readonly dialogRef = inject(MatDialogRef<QuranReaderDialog, boolean>);
   readonly data = inject<QuranReaderDialogData>(MAT_DIALOG_DATA);
 
+  private readonly scrollContainer = viewChild<ElementRef<HTMLElement>>('scrollContainer');
+
   readonly pageIndex = signal(0);
   readonly currentPage = computed(() => this.data.pages[this.pageIndex()]);
   readonly loading = signal(false);
@@ -52,13 +54,20 @@ export class QuranReaderDialog {
   prevPage(): void {
     if (!this.canGoPrev()) return;
     this.pageIndex.update((i) => i - 1);
+    this.resetScroll();
     void this.loadPage(this.currentPage());
   }
 
   nextPage(): void {
     if (!this.canGoNext()) return;
     this.pageIndex.update((i) => i + 1);
+    this.resetScroll();
     void this.loadPage(this.currentPage());
+  }
+
+  private resetScroll(): void {
+    const el = this.scrollContainer()?.nativeElement;
+    if (el) el.scrollTop = 0;
   }
 
   async loadPage(page: number): Promise<void> {

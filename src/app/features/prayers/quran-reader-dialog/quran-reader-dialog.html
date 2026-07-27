@@ -2,7 +2,7 @@
   {{ 'prayers.' + data.prayerName | translate }} &middot; {{ 'quran.page' | translate }} {{ currentPage() }}
 </h2>
 
-<mat-dialog-content class="quran-reader">
+<mat-dialog-content class="quran-reader" #scrollContainer>
   @if (loading()) {
     <div class="quran-reader__loading">
       <mat-progress-spinner diameter="36" strokeWidth="3" mode="indeterminate" />
