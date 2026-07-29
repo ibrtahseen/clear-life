@@ -53,6 +53,12 @@ export class TimePicker {
     this.commit(this.hour12(), this.minute(), period);
   }
 
+  /** Turns on a reminder with a sensible default time, starting from "no reminder". */
+  enable(): void {
+    if (this.value()) return;
+    this.value.set('09:00');
+  }
+
   clear(): void {
     this.value.set(null);
   }

@@ -199,7 +199,9 @@
     "period": "AM or PM",
     "am": "AM",
     "pm": "PM",
-    "clear": "Clear reminder"
+    "clear": "Clear reminder",
+    "noReminder": "No reminder set",
+    "add": "Add"
   },
   "stayFocus": {
     "title": "Stay Focus",

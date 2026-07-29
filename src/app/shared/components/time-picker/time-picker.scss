@@ -2,15 +2,21 @@
   display: block;
 }
 
-.time-picker {
+.time-picker__control {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.65rem;
   border-radius: 999px;
   border: 1px solid var(--mat-sys-outline-variant);
-  background: transparent;
+  background: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
   flex-wrap: wrap;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
+  }
 }
 
 .time-picker__icon {
@@ -26,45 +32,66 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   cursor: pointer;
-  padding: 0.2rem 0.1rem;
+  padding: 0.25rem 0.3rem;
   border-radius: 8px;
   font-variant-numeric: tabular-nums;
+  transition: background 0.15s ease;
 
   &:hover,
   &:focus-visible {
-    background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+    background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
   }
 }
 
 .time-picker__colon {
   font-weight: 700;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .time-picker__period {
   display: flex;
   gap: 0.2rem;
   margin-inline-start: 0.25rem;
+  padding: 0.15rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
 }
 
 .time-picker__period-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
   padding: 0.3rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid var(--mat-sys-outline-variant);
+  border: none;
   background: transparent;
   color: inherit;
   font: inherit;
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+
+  .mat-icon {
+    font-size: 0.9rem;
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  }
 
   &--active {
-    border-color: var(--mat-sys-primary);
     background: var(--mat-sys-primary);
     color: var(--mat-sys-on-primary, #fff);
+
+    &:hover {
+      background: var(--mat-sys-primary);
+    }
   }
 }
 
@@ -73,14 +100,15 @@
   align-items: center;
   justify-content: center;
   margin-inline-start: auto;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 999px;
   border: none;
   background: transparent;
   color: inherit;
   opacity: 0.55;
   cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
 
   .mat-icon {
     font-size: 1rem;
@@ -90,6 +118,72 @@
 
   &:hover {
     opacity: 1;
-    background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+    background: color-mix(in srgb, #ef4444 15%, transparent);
+    color: #ef4444;
+  }
+}
+
+.time-picker__empty {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 999px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--mat-sys-primary);
+    background: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent);
+  }
+}
+
+.time-picker__empty-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  opacity: 0.7;
+
+  .mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.time-picker__empty-text {
+  flex: 1;
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.time-picker__empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+  color: var(--mat-sys-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  .mat-icon {
+    font-size: 0.95rem;
+    width: 0.95rem;
+    height: 0.95rem;
   }
 }
