@@ -155,6 +155,10 @@ export class HabitsPage {
       data: { habit },
       width: '28rem',
       maxWidth: '92vw',
+      // Editing opens straight into a filled-out form — autofocusing the title
+      // input would pop the mobile keyboard immediately for no reason. Creating
+      // still focuses it since typing the title is the first thing to do.
+      autoFocus: habit ? 'dialog' : true,
     });
     ref.afterClosed().subscribe((saved) => {
       if (saved) {
