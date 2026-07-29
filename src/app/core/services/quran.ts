@@ -75,24 +75,37 @@ export class Quran {
     this.progress.set(updated);
   }
 
-  /** Reverses the award for a prayer completion that was un-checked. */
+  /**
+   * Reverses the award for a prayer completion that was un-checked. Rather than
+   * resetting the cursor to this entry's start page (which would discard any
+   * pages awarded by a *later* prayer if an earlier one is un-checked out of
+   * order), the cursor and completions are replayed from the remaining log in
+   * award order — so only this entry's pages are ever removed.
+   */
   async revokePagesForPrayer(date: IsoDate, prayerName: PrayerName): Promise<void> {
     const log = await this.quranRepository.getLog();
     const entry = [...log].reverse().find((e) => e.date === date && e.prayerName === prayerName);
-    if (!entry) return;
+    if (!entry?.id) return;
 
-    const current = this.progress();
-    const wrapped = entry.endPage < entry.startPage || current.currentPage <= entry.startPage;
+    await this.quranRepository.deleteLogEntry(entry.id);
+
+    const remaining = log.filter((e) => e.id !== entry.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    let cursor = 1;
+    let completions = 0;
+    for (const e of remaining) {
+      const count = this.expandRange({ start: e.startPage, end: e.endPage }).length;
+      const built = this.buildPages(cursor, count);
+      cursor = built.cursor;
+      completions += built.wraps;
+    }
+
     const updated: QuranProgressState = {
-      ...current,
-      currentPage: entry.startPage,
-      completions: wrapped && current.completions > 0 ? current.completions - 1 : current.completions,
+      ...this.progress(),
+      currentPage: cursor,
+      completions,
       updatedAt: new Date().toISOString(),
     };
     await this.quranRepository.saveProgress(updated);
-    if (entry.id) {
-      await this.quranRepository.deleteLogEntry(entry.id);
-    }
     this.progress.set(updated);
   }
 

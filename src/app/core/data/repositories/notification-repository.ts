@@ -13,19 +13,9 @@ export class NotificationRepository {
     return this.table.orderBy('scheduledAt').toArray();
   }
 
-  getUpcoming(fromIso: string): Promise<NotificationLogEntry[]> {
-    return this.table
-      .filter((n) => !n.sentAt && n.scheduledAt >= fromIso)
-      .toArray();
-  }
-
   async add(entry: Omit<NotificationLogEntry, 'id'>): Promise<NotificationLogEntry> {
     const id = await this.table.add(entry as NotificationLogEntry);
     return { ...entry, id };
-  }
-
-  async markSent(id: number): Promise<void> {
-    await this.table.update(id, { sentAt: new Date().toISOString() });
   }
 
   async bulkPut(entries: NotificationLogEntry[]): Promise<void> {

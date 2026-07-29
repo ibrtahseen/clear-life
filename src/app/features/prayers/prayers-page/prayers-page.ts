@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnDestroy, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,7 @@ import { InlineMessage } from '../../../shared/components/inline-message/inline-
 import { Prayer as PrayerService } from '../../../core/services/prayer';
 import { Quran as QuranService, PrayerPageRange } from '../../../core/services/quran';
 import { PRAYER_NAMES, PrayerName } from '../../../core/models/prayer.model';
-import { countdownToTime, formatTime, todayIso } from '../../../core/utils/date.util';
+import { formatTime, todayIso } from '../../../core/utils/date.util';
 import { QuranReaderDialog, QuranReaderDialogData } from '../quran-reader-dialog/quran-reader-dialog';
 
 @Component({
@@ -19,11 +19,10 @@ import { QuranReaderDialog, QuranReaderDialogData } from '../quran-reader-dialog
   styleUrl: './prayers-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PrayersPage implements OnDestroy {
+export class PrayersPage {
   private readonly prayerService = inject(PrayerService);
   private readonly quranService = inject(QuranService);
   private readonly dialog = inject(MatDialog);
-  private intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   readonly prayerNames = PRAYER_NAMES;
   readonly schedule = this.prayerService.schedule;
@@ -31,18 +30,12 @@ export class PrayersPage implements OnDestroy {
   readonly error = this.prayerService.error;
   readonly completionMap = this.prayerService.completionMap;
   readonly nextPrayer = this.prayerService.nextPrayer;
+  readonly countdownLabel = this.prayerService.countdownLabel;
   readonly quranProgress = this.quranService.progress;
   readonly pageRanges = signal<Partial<Record<PrayerName, PrayerPageRange>>>({});
 
-  readonly now = signal(Date.now());
-  readonly countdownLabel = computed(() => {
-    const next = this.nextPrayer();
-    return next ? countdownToTime(next.time, this.now()) : '';
-  });
-
   constructor() {
     void this.init();
-    this.intervalHandle = setInterval(() => this.now.set(Date.now()), 30_000);
   }
 
   private async init(): Promise<void> {
@@ -53,10 +46,6 @@ export class PrayersPage implements OnDestroy {
   private async refreshPageRanges(): Promise<void> {
     const completed = new Set(this.prayerNames.filter((name) => this.isCompleted(name)));
     this.pageRanges.set(await this.quranService.pageRangesForDate(todayIso(), completed));
-  }
-
-  ngOnDestroy(): void {
-    if (this.intervalHandle) clearInterval(this.intervalHandle);
   }
 
   formattedTime(time: string): string {

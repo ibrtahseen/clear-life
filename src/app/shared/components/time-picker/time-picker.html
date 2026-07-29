@@ -1,62 +1,66 @@
 <div class="time-picker">
   @if (hasValue()) {
     <div class="time-picker__control">
-      <mat-icon class="time-picker__icon">schedule</mat-icon>
+      <div class="time-picker__display">
+        <mat-icon class="time-picker__icon">schedule</mat-icon>
 
-      <select
-        class="time-picker__select time-picker__select--hour"
-        [value]="hour12()"
-        (change)="setHour(+$any($event.target).value)"
-        [attr.aria-label]="'timePicker.hour' | translate"
-      >
-        @for (h of hours; track h) {
-          <option [value]="h">{{ h }}</option>
-        }
-      </select>
-
-      <span class="time-picker__colon">:</span>
-
-      <select
-        class="time-picker__select time-picker__select--minute"
-        [value]="minute()"
-        (change)="setMinute(+$any($event.target).value)"
-        [attr.aria-label]="'timePicker.minute' | translate"
-      >
-        @for (m of minutes; track m) {
-          <option [value]="m">{{ m < 10 ? '0' + m : m }}</option>
-        }
-      </select>
-
-      <div class="time-picker__period" role="group" [attr.aria-label]="'timePicker.period' | translate">
-        <button
-          type="button"
-          class="time-picker__period-btn"
-          [class.time-picker__period-btn--active]="period() === 'AM'"
-          (click)="setPeriod('AM')"
+        <select
+          class="time-picker__select time-picker__select--hour"
+          [value]="hour12()"
+          (change)="setHour(+$any($event.target).value)"
+          [attr.aria-label]="'timePicker.hour' | translate"
         >
-          <mat-icon>light_mode</mat-icon>
-          {{ 'timePicker.am' | translate }}
-        </button>
-        <button
-          type="button"
-          class="time-picker__period-btn"
-          [class.time-picker__period-btn--active]="period() === 'PM'"
-          (click)="setPeriod('PM')"
+          @for (h of hours; track h) {
+            <option [value]="h">{{ h }}</option>
+          }
+        </select>
+
+        <span class="time-picker__colon">:</span>
+
+        <select
+          class="time-picker__select time-picker__select--minute"
+          [value]="minute()"
+          (change)="setMinute(+$any($event.target).value)"
+          [attr.aria-label]="'timePicker.minute' | translate"
         >
-          <mat-icon>dark_mode</mat-icon>
-          {{ 'timePicker.pm' | translate }}
-        </button>
+          @for (m of minutes; track m) {
+            <option [value]="m">{{ m < 10 ? '0' + m : m }}</option>
+          }
+        </select>
       </div>
 
-      <button
-        type="button"
-        class="time-picker__clear"
-        [attr.aria-label]="'timePicker.clear' | translate"
-        [title]="'timePicker.clear' | translate"
-        (click)="clear()"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
+      <div class="time-picker__actions">
+        <div class="time-picker__period" role="group" [attr.aria-label]="'timePicker.period' | translate">
+          <button
+            type="button"
+            class="time-picker__period-btn"
+            [class.time-picker__period-btn--active]="period() === 'AM'"
+            (click)="setPeriod('AM')"
+          >
+            <mat-icon>light_mode</mat-icon>
+            {{ 'timePicker.am' | translate }}
+          </button>
+          <button
+            type="button"
+            class="time-picker__period-btn"
+            [class.time-picker__period-btn--active]="period() === 'PM'"
+            (click)="setPeriod('PM')"
+          >
+            <mat-icon>dark_mode</mat-icon>
+            {{ 'timePicker.pm' | translate }}
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="time-picker__clear"
+          [attr.aria-label]="'timePicker.clear' | translate"
+          [title]="'timePicker.clear' | translate"
+          (click)="clear()"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
     </div>
   } @else {
     <button type="button" class="time-picker__empty" (click)="enable()">

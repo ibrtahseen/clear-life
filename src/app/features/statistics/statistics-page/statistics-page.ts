@@ -9,6 +9,7 @@ import { Statistics as StatisticsService } from '../../../core/services/statisti
 import { Insights as InsightsService } from '../../../core/services/insights';
 import { Insight, InsightTone } from '../../../core/models/statistics.model';
 import { toIsoDate, formatDuration, formatTime } from '../../../core/utils/date.util';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899'];
 
@@ -20,7 +21,7 @@ interface InsightViewModel {
 
 @Component({
   selector: 'app-statistics-page',
-  imports: [TranslatePipe, MatIconModule, BaseChartDirective],
+  imports: [TranslatePipe, MatIconModule, BaseChartDirective, EmptyState],
   // Only 'bar' charts are used here — registering the full default set (radar,
   // bubble, scatter, time scales, etc.) via withDefaultRegisterables() pulled a
   // large chunk of unused chart.js into this page's bundle.

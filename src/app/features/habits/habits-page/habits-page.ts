@@ -12,8 +12,10 @@ import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel, HabitHistoryEntry } from '../../../core/models/habit.model';
 import { IsoDate, WeekDay } from '../../../core/models/common.model';
 import { SettingsStore } from '../../../core/services/settings-store';
-import { isoRange, startOfWeek, todayIso } from '../../../core/utils/date.util';
+import { Clock } from '../../../core/services/clock';
+import { isoRange, startOfWeek, toIsoDate } from '../../../core/utils/date.util';
 import { Confirm } from '../../../shared/services/confirm';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { HabitFormDialog, HabitFormDialogData } from '../habit-form-dialog/habit-form-dialog';
 import { ArchivedHabitsDialog } from '../archived-habits-dialog/archived-habits-dialog';
 
@@ -24,7 +26,7 @@ const SWIPE_ARCHIVE_THRESHOLD = 90;
 
 @Component({
   selector: 'app-habits-page',
-  imports: [TranslatePipe, MatButtonModule, MatIconModule, MatBadgeModule, DragDropModule],
+  imports: [TranslatePipe, MatButtonModule, MatIconModule, MatBadgeModule, DragDropModule, EmptyState],
   templateUrl: './habits-page.html',
   styleUrl: './habits-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,13 +38,14 @@ export class HabitsPage {
   private readonly confirm = inject(Confirm);
   private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
+  private readonly clock = inject(Clock);
 
   readonly habits = computed(() => this.habitService.activeHabits());
   readonly archivedCount = computed(() => this.habitService.archivedHabits().length);
 
-  readonly todayIsoDate = todayIso();
+  readonly todayIsoDate = computed(() => toIsoDate(new Date(this.clock.now())));
   readonly viewMode = signal<ViewMode>('day');
-  readonly selectedDate = signal<IsoDate>(this.todayIsoDate);
+  readonly selectedDate = signal<IsoDate>(this.todayIsoDate());
   private readonly selectedHistory = signal<HabitHistoryEntry[]>([]);
 
   /** When on, the day list becomes drag-reorderable instead of swipe-to-archive. */
@@ -60,7 +63,7 @@ export class HabitsPage {
   });
 
   readonly selectedWeekday = computed(() => dayjs(this.selectedDate()).day() as WeekDay);
-  readonly isSelectedToday = computed(() => this.selectedDate() === this.todayIsoDate);
+  readonly isSelectedToday = computed(() => this.selectedDate() === this.todayIsoDate());
 
   private readonly selectedCompletionMap = computed(() => {
     const map = new Map<number, boolean>();
@@ -240,11 +243,7 @@ export class HabitsPage {
   }
 
   categoryLabel(habit: HabitModel): string {
-    if (habit.category === 'custom' && habit.customCategoryId != null) {
-      const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
-      if (custom) return custom.name;
-    }
-    return this.translate.instant(`habitCategories.${habit.category}`);
+    return this.categoryService.labelFor(habit);
   }
 
   openArchivedHabits(): void {

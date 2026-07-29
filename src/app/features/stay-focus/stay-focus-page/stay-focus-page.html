@@ -69,7 +69,7 @@
   }
 
   @if (countdowns().length === 0) {
-    <p class="stay-focus__empty">{{ 'stayFocus.empty' | translate }}</p>
+    <app-empty-state variant="spacious">{{ 'stayFocus.empty' | translate }}</app-empty-state>
   } @else {
     <div class="stay-focus__list">
       @for (countdown of countdowns(); track countdown.id) {

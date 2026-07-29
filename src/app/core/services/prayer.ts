@@ -1,11 +1,12 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { PrayerApi } from './prayer-api';
 import { SettingsStore } from './settings-store';
+import { Clock } from './clock';
 import { PrayerHistoryRepository } from '../data/repositories/prayer-history-repository';
 import { AppStateRepository } from '../data/repositories/app-state-repository';
 import { Quran } from './quran';
 import { DailyPrayerSchedule, PRAYER_NAMES, PrayerHistoryEntry, PrayerName } from '../models/prayer.model';
-import { todayIso } from '../utils/date.util';
+import { countdownToTime, minutesSinceMidnight, parseHHmmToMinutes, todayIso } from '../utils/date.util';
 
 const CACHE_PREFIX = 'clear-life:prayer-schedule:';
 
@@ -16,6 +17,7 @@ export class Prayer {
   private readonly prayerHistoryRepository = inject(PrayerHistoryRepository);
   private readonly appStateRepository = inject(AppStateRepository);
   private readonly quran = inject(Quran);
+  private readonly clock = inject(Clock);
 
   readonly schedule = signal<DailyPrayerSchedule | null>(null);
   readonly todayHistory = signal<PrayerHistoryEntry[]>([]);
@@ -33,16 +35,20 @@ export class Prayer {
   readonly nextPrayer = computed<{ name: PrayerName; time: string } | null>(() => {
     const schedule = this.schedule();
     if (!schedule) return null;
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const nowMinutes = minutesSinceMidnight(new Date(this.clock.now()));
     for (const name of PRAYER_NAMES) {
       const time = schedule.times[name];
-      const [h, m] = time.split(':').map(Number);
-      if (h * 60 + m >= nowMinutes) {
+      if (parseHHmmToMinutes(time) >= nowMinutes) {
         return { name, time };
       }
     }
     return { name: PRAYER_NAMES[0], time: schedule.times[PRAYER_NAMES[0]] };
+  });
+
+  /** "Xh Ym" until `nextPrayer`, ticking live off the shared clock. */
+  readonly countdownLabel = computed(() => {
+    const next = this.nextPrayer();
+    return next ? countdownToTime(next.time, this.clock.now()) : '';
   });
 
   async loadToday(): Promise<void> {

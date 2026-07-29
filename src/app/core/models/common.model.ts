@@ -53,3 +53,27 @@ export const HABIT_CATEGORIES: HabitCategory[] = [
   'mindfulness',
   'custom',
 ];
+
+export interface StepOption<T> {
+  label: string;
+  value: T;
+  icon?: string;
+}
+
+/** Shared between onboarding and settings so the two option lists never drift apart. */
+export const LANGUAGE_OPTIONS: StepOption<Language>[] = [
+  { label: 'English', value: 'en' },
+  { label: 'العربية', value: 'ar' },
+];
+
+export const THEME_OPTIONS: StepOption<ThemeMode>[] = [
+  { label: 'Light', value: 'light', icon: 'light_mode' },
+  { label: 'Dark', value: 'dark', icon: 'dark_mode' },
+  { label: 'System', value: 'system', icon: 'desktop_windows' },
+];
+
+export const WEEK_DAY_OPTIONS: StepOption<WeekDay>[] = [
+  { label: 'Sunday', value: 0 },
+  { label: 'Monday', value: 1 },
+  { label: 'Saturday', value: 6 },
+];

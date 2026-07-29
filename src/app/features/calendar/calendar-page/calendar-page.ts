@@ -3,9 +3,11 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import dayjs from 'dayjs';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 import { SettingsStore } from '../../../core/services/settings-store';
 import { Statistics as StatisticsService } from '../../../core/services/statistics';
+import { Clock } from '../../../core/services/clock';
 import { HabitRepository } from '../../../core/data/repositories/habit-repository';
 import { HabitHistoryRepository } from '../../../core/data/repositories/habit-history-repository';
 import { PrayerHistoryRepository } from '../../../core/data/repositories/prayer-history-repository';
@@ -25,9 +27,16 @@ interface CalendarDay {
   focusSeconds: number;
 }
 
+/** The 42-day (6-week) grid range covering `month`, starting on `firstDayOfWeek`. */
+function monthGridRange(month: string, firstDayOfWeek: WeekDay): { start: dayjs.Dayjs; end: dayjs.Dayjs } {
+  const monthStart = dayjs(`${month}-01`);
+  const start = startOfWeek(monthStart, firstDayOfWeek);
+  return { start, end: start.add(41, 'day') };
+}
+
 @Component({
   selector: 'app-calendar-page',
-  imports: [TranslatePipe, MatButtonModule, MatIconModule],
+  imports: [TranslatePipe, MatButtonModule, MatIconModule, EmptyState],
   templateUrl: './calendar-page.html',
   styleUrl: './calendar-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,11 +48,12 @@ export class CalendarPage {
   private readonly habitHistoryRepository = inject(HabitHistoryRepository);
   private readonly prayerHistoryRepository = inject(PrayerHistoryRepository);
   private readonly focusSessionRepository = inject(FocusSessionRepository);
+  private readonly clock = inject(Clock);
 
   readonly prayerNames = PRAYER_NAMES;
   readonly viewDate = signal(dayjs());
   readonly selectedDate = signal(toIsoDate());
-  readonly todayIso = toIsoDate();
+  readonly todayIso = computed(() => toIsoDate(new Date(this.clock.now())));
 
   readonly monthLabel = computed(() => this.viewDate().format('MMMM YYYY'));
   readonly hijriMonthLabel = computed(() => formatHijri(this.viewDate().toDate(), this.settingsStore.settings().language));
@@ -62,29 +72,26 @@ export class CalendarPage {
   private readonly heatmapResource = resource({
     params: () => ({ month: this.viewDate().format('YYYY-MM'), firstDayOfWeek: this.firstDayOfWeek() }),
     loader: async ({ params }) => {
-      const monthStart = dayjs(params.month + '-01');
-      const gridStart = startOfWeek(monthStart, params.firstDayOfWeek as WeekDay);
-      const gridEnd = gridStart.add(41, 'day');
-      return this.statisticsService.heatmap(toIsoDate(gridStart), toIsoDate(gridEnd));
+      const { start, end } = monthGridRange(params.month, params.firstDayOfWeek as WeekDay);
+      return this.statisticsService.heatmap(toIsoDate(start), toIsoDate(end));
     },
   });
 
   private readonly focusResource = resource({
     params: () => ({ month: this.viewDate().format('YYYY-MM'), firstDayOfWeek: this.firstDayOfWeek() }),
     loader: async ({ params }) => {
-      const monthStart = dayjs(params.month + '-01');
-      const gridStart = startOfWeek(monthStart, params.firstDayOfWeek as WeekDay);
-      const gridEnd = gridStart.add(41, 'day');
-      return this.statisticsService.focusSecondsByDay(toIsoDate(gridStart), toIsoDate(gridEnd));
+      const { start, end } = monthGridRange(params.month, params.firstDayOfWeek as WeekDay);
+      return this.statisticsService.focusSecondsByDay(toIsoDate(start), toIsoDate(end));
     },
   });
 
   readonly days = computed<CalendarDay[]>(() => {
     const view = this.viewDate();
     const monthStart = view.startOf('month');
-    const gridStart = startOfWeek(monthStart, this.firstDayOfWeek());
+    const { start: gridStart } = monthGridRange(view.format('YYYY-MM'), this.firstDayOfWeek());
     const rateByDate = new Map((this.heatmapResource.value() ?? []).map((d) => [d.date, d.rate]));
     const focusByDate = new Map((this.focusResource.value() ?? []).map((d) => [d.date, d.seconds]));
+    const todayIso = this.todayIso();
 
     return Array.from({ length: 42 }, (_, i) => {
       const date = gridStart.add(i, 'day');
@@ -94,7 +101,7 @@ export class CalendarPage {
         dayNumber: date.date(),
         hijriDay: toHijri(date.toDate()).day,
         isCurrentMonth: date.month() === monthStart.month(),
-        isToday: iso === this.todayIso,
+        isToday: iso === todayIso,
         rate: rateByDate.get(iso) ?? 0,
         focusSeconds: focusByDate.get(iso) ?? 0,
       };

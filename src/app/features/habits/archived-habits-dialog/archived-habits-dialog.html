@@ -2,7 +2,7 @@
 
 <mat-dialog-content class="archived-habits">
   @if (habits().length === 0) {
-    <p class="archived-habits__empty">{{ 'habits.noArchivedHabits' | translate }}</p>
+    <app-empty-state>{{ 'habits.noArchivedHabits' | translate }}</app-empty-state>
   } @else {
     @for (habit of habits(); track habit.id) {
       <article class="archived-habits__card">

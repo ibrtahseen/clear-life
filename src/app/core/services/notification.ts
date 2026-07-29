@@ -6,7 +6,7 @@ import { Habit } from './habit';
 import { NotificationRepository } from '../data/repositories/notification-repository';
 import { NotificationKind } from '../models/notification.model';
 import { I18n } from './i18n';
-import { formatTime } from '../utils/date.util';
+import { formatTime, minutesSinceMidnight, parseHHmmToMinutes } from '../utils/date.util';
 
 export type NotificationPermissionState = 'default' | 'granted' | 'denied' | 'unsupported';
 
@@ -60,15 +60,13 @@ export class Notification {
 
   private async checkDueReminders(): Promise<void> {
     const settings = this.settingsStore.settings();
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const nowMinutes = minutesSinceMidnight(new Date());
 
     if (settings.notifications.prayerRemindersEnabled) {
       const schedule = this.prayer.schedule();
       if (schedule) {
         for (const [name, time] of Object.entries(schedule.times)) {
-          const [h, m] = time.split(':').map(Number);
-          const target = h * 60 + m - settings.notifications.reminderLeadMinutes;
+          const target = parseHHmmToMinutes(time) - settings.notifications.reminderLeadMinutes;
           if (target === nowMinutes) {
             await this.fire(`prayer:${schedule.date}:${name}`, 'prayer', name, this.prayerMessage(name, time));
           }
@@ -79,8 +77,7 @@ export class Notification {
     if (settings.notifications.habitRemindersEnabled) {
       for (const habit of this.habit.todaysHabits()) {
         if (!habit.reminderTime || !habit.id) continue;
-        const [h, m] = habit.reminderTime.split(':').map(Number);
-        if (h * 60 + m === nowMinutes) {
+        if (parseHHmmToMinutes(habit.reminderTime) === nowMinutes) {
           const completed = this.habit.completionMap().get(habit.id) ?? false;
           if (!completed) {
             await this.fire(

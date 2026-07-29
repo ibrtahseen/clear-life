@@ -1,7 +1,7 @@
 <div class="dashboard">
   <header class="dashboard__greeting">
     <h1>{{ greetingKey() | translate: { name: userName() } }}</h1>
-    <p class="dashboard__dates">{{ today | date: 'EEEE, MMMM d, y' }} &middot; {{ hijriDate }}</p>
+    <p class="dashboard__dates">{{ today() | date: 'EEEE, MMMM d, y' }} &middot; {{ hijriDate() }}</p>
   </header>
 
   @if (nextPrayer(); as next) {
@@ -34,7 +34,7 @@
     <section class="dashboard__card">
       <h2>{{ 'dashboard.todaysHabits' | translate }}</h2>
       @if (todaysHabits().length === 0) {
-        <p class="dashboard__empty">{{ 'dashboard.noHabitsToday' | translate }}</p>
+        <app-empty-state variant="inline">{{ 'dashboard.noHabitsToday' | translate }}</app-empty-state>
       } @else {
         <div class="dashboard__habit-list">
           @for (habit of todaysHabits(); track habit.id) {
@@ -66,7 +66,7 @@
           <span>{{ stats.prayer.rate }}%</span>
         </div>
       } @else {
-        <p class="dashboard__empty">{{ 'common.loading' | translate }}</p>
+        <app-empty-state variant="inline">{{ 'common.loading' | translate }}</app-empty-state>
       }
     </section>
 
@@ -83,13 +83,13 @@
     <section class="dashboard__card">
       <h2>{{ 'dashboard.quranProgress' | translate }}</h2>
       <p class="dashboard__quran-page">{{ quranRangeLabel() }}</p>
-      <p class="dashboard__empty">{{ 'prayers.currentPage' | translate }}</p>
+      <app-empty-state variant="inline">{{ 'prayers.currentPage' | translate }}</app-empty-state>
     </section>
 
     <section class="dashboard__card">
       <h2>{{ 'dashboard.upcomingReminders' | translate }}</h2>
       @if (upcomingReminders().length === 0) {
-        <p class="dashboard__empty">{{ 'dashboard.noReminders' | translate }}</p>
+        <app-empty-state variant="inline">{{ 'dashboard.noReminders' | translate }}</app-empty-state>
       } @else {
         @for (habit of upcomingReminders(); track habit.id) {
           <div class="dashboard__reminder-row">

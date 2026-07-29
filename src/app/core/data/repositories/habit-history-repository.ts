@@ -14,10 +14,6 @@ export class HabitHistoryRepository {
     return this.table.toArray();
   }
 
-  getForHabit(habitId: number): Promise<HabitHistoryEntry[]> {
-    return this.table.where('habitId').equals(habitId).toArray();
-  }
-
   getForDate(date: IsoDate): Promise<HabitHistoryEntry[]> {
     return this.table.where('date').equals(date).toArray();
   }

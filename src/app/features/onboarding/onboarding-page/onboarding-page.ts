@@ -15,13 +15,14 @@ import { UserStore } from '../../../core/services/user-store';
 import { SettingsStore } from '../../../core/services/settings-store';
 import { Geolocation, CityEntry } from '../../../core/services/geolocation';
 import { AppStateRepository } from '../../../core/data/repositories/app-state-repository';
-import { Language, ThemeMode, WeekDay } from '../../../core/models/common.model';
-
-interface StepOption<T> {
-  label: string;
-  value: T;
-  icon?: string;
-}
+import {
+  Language,
+  LANGUAGE_OPTIONS,
+  THEME_OPTIONS,
+  ThemeMode,
+  WeekDay,
+  WEEK_DAY_OPTIONS,
+} from '../../../core/models/common.model';
 
 interface OnboardingFormValue {
   name: string;
@@ -80,22 +81,9 @@ export class OnboardingPage {
 
   readonly saving = signal(false);
 
-  readonly languageOptions: StepOption<Language>[] = [
-    { label: 'English', value: 'en' },
-    { label: 'العربية', value: 'ar' },
-  ];
-
-  readonly themeOptions: StepOption<ThemeMode>[] = [
-    { label: 'Light', value: 'light', icon: 'light_mode' },
-    { label: 'Dark', value: 'dark', icon: 'dark_mode' },
-    { label: 'System', value: 'system', icon: 'desktop_windows' },
-  ];
-
-  readonly weekDayOptions: StepOption<WeekDay>[] = [
-    { label: 'Sunday', value: 0 },
-    { label: 'Monday', value: 1 },
-    { label: 'Saturday', value: 6 },
-  ];
+  readonly languageOptions = LANGUAGE_OPTIONS;
+  readonly themeOptions = THEME_OPTIONS;
+  readonly weekDayOptions = WEEK_DAY_OPTIONS;
 
   readonly canContinue = computed(() => {
     switch (this.step()) {

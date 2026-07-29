@@ -56,7 +56,7 @@
       <div class="calendar__detail-group">
         <h3>{{ 'habits.title' | translate }}</h3>
         @if (detail.habits.length === 0) {
-          <p class="calendar__empty">{{ 'dashboard.noHabitsToday' | translate }}</p>
+          <app-empty-state variant="inline">{{ 'dashboard.noHabitsToday' | translate }}</app-empty-state>
         } @else {
           <div class="calendar__chip-row">
             @for (habit of detail.habits; track habit.title) {
@@ -72,7 +72,7 @@
       <div class="calendar__detail-group">
         <h3>{{ 'stayFocus.title' | translate }}</h3>
         @if (detail.focusSessions.length === 0) {
-          <p class="calendar__empty">{{ 'stayFocus.noSessions' | translate }}</p>
+          <app-empty-state variant="inline">{{ 'stayFocus.noSessions' | translate }}</app-empty-state>
         } @else {
           <p class="calendar__focus-total">
             {{ 'stayFocus.totalFocused' | translate }}: <strong>{{ formatFocusDuration(detail.focusTotalSeconds) }}</strong>

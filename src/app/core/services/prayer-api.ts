@@ -87,12 +87,6 @@ export class PrayerApi {
     return result;
   }
 
-  async fetchCalculationMethods(): Promise<unknown> {
-    return this.withRetry(() =>
-      firstValueFrom(this.http.get(`${BASE_URL}/prayer-times/methods`, { headers: this.headers })),
-    );
-  }
-
   private async withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 800): Promise<T> {
     try {
       return await fn();

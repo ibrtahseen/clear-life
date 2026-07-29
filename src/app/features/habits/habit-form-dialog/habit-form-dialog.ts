@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { Habit as HabitService } from '../../../core/services/habit';
 import { Category as CategoryService } from '../../../core/services/category';
+import { I18n } from '../../../core/services/i18n';
 import { Habit as HabitModel } from '../../../core/models/habit.model';
 import { HabitCategory, WeekDay, HABIT_CATEGORIES } from '../../../core/models/common.model';
 import { TimePicker } from '../../../shared/components/time-picker/time-picker';
@@ -103,28 +104,35 @@ export class HabitFormDialog {
   private readonly dialogRef = inject(MatDialogRef<HabitFormDialog, boolean>);
   private readonly data = inject<HabitFormDialogData>(MAT_DIALOG_DATA);
   private readonly translate = inject(TranslateService);
+  private readonly i18n = inject(I18n);
 
   readonly habitToEdit = this.data.habit;
 
   readonly icons = ICON_PRESETS;
   readonly colors = COLOR_PRESETS;
-  readonly weekDays: { value: WeekDay; label: string }[] = ([0, 1, 2, 3, 4, 5, 6] as WeekDay[]).map((value) => ({
-    value,
-    label: this.translate.instant(`habits.weekdayLetters.${value}`),
-  }));
 
-  readonly presetChoices: CategoryChoice[] = HABIT_CATEGORIES.filter(
-    (key): key is PresetCategory => key !== 'custom',
-  ).map((key) => ({
-    kind: 'preset',
-    key,
-    icon: CATEGORY_PRESET_META[key].icon,
-    color: CATEGORY_PRESET_META[key].color,
-    label: this.translate.instant(`habitCategories.${key}`),
-  }));
+  /** Recomputes on language change so labels don't go stale if the dialog stays open across a live switch. */
+  readonly weekDays = computed<{ value: WeekDay; label: string }[]>(() => {
+    this.i18n.language();
+    return ([0, 1, 2, 3, 4, 5, 6] as WeekDay[]).map((value) => ({
+      value,
+      label: this.translate.instant(`habits.weekdayLetters.${value}`),
+    }));
+  });
+
+  readonly presetChoices = computed<CategoryChoice[]>(() => {
+    this.i18n.language();
+    return HABIT_CATEGORIES.filter((key): key is PresetCategory => key !== 'custom').map((key) => ({
+      kind: 'preset' as const,
+      key,
+      icon: CATEGORY_PRESET_META[key].icon,
+      color: CATEGORY_PRESET_META[key].color,
+      label: this.translate.instant(`habitCategories.${key}`),
+    }));
+  });
 
   readonly categoryChoices = computed<CategoryChoice[]>(() => [
-    ...this.presetChoices,
+    ...this.presetChoices(),
     ...this.categoryService.categories().map((c) => ({
       kind: 'custom' as const,
       id: c.id!,
@@ -134,7 +142,7 @@ export class HabitFormDialog {
     })),
   ]);
 
-  readonly selectedChoice = signal<CategoryChoice>(this.presetChoices[5]); // 'personal' fallback
+  readonly selectedChoice = signal<CategoryChoice>(this.presetChoices()[5]); // 'personal' fallback
   readonly selectedSchedule = signal<WeekDay[]>(this.habitToEdit?.schedule ?? [0, 1, 2, 3, 4, 5, 6]);
   readonly saving = signal(false);
 
@@ -158,15 +166,16 @@ export class HabitFormDialog {
 
   private resolveInitialChoice(): CategoryChoice {
     const habit = this.habitToEdit;
-    if (!habit) return this.presetChoices.find((c) => c.kind === 'preset' && c.key === 'personal')!;
+    const presetChoices = this.presetChoices();
+    if (!habit) return presetChoices.find((c) => c.kind === 'preset' && c.key === 'personal')!;
     if (habit.category !== 'custom') {
-      return this.presetChoices.find((c) => c.kind === 'preset' && c.key === habit.category) ?? this.presetChoices[0];
+      return presetChoices.find((c) => c.kind === 'preset' && c.key === habit.category) ?? presetChoices[0];
     }
     const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
     if (custom) {
       return { kind: 'custom', id: custom.id!, icon: custom.icon, color: custom.color, label: custom.name };
     }
-    return this.presetChoices[0];
+    return presetChoices[0];
   }
 
   selectChoice(choice: CategoryChoice): void {

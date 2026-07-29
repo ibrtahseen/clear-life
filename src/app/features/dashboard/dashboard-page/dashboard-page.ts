@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, resource, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 import { UserStore } from '../../../core/services/user-store';
 import { SettingsStore } from '../../../core/services/settings-store';
@@ -11,9 +12,10 @@ import { Prayer as PrayerService } from '../../../core/services/prayer';
 import { Habit as HabitService } from '../../../core/services/habit';
 import { Quran as QuranService } from '../../../core/services/quran';
 import { Statistics as StatisticsService } from '../../../core/services/statistics';
+import { Clock } from '../../../core/services/clock';
 import { PRAYER_NAMES, PrayerName } from '../../../core/models/prayer.model';
 import { formatHijri } from '../../../core/utils/hijri.util';
-import { countdownToTime, formatTime, todayIso } from '../../../core/utils/date.util';
+import { formatTime, minutesSinceMidnight, parseHHmmToMinutes, todayIso } from '../../../core/utils/date.util';
 import {
   QuranReaderDialog,
   QuranReaderDialogData,
@@ -21,28 +23,28 @@ import {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [RouterLink, TranslatePipe, DatePipe, MatIconModule],
+  imports: [RouterLink, TranslatePipe, DatePipe, MatIconModule, EmptyState],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardPage implements OnDestroy {
+export class DashboardPage {
   private readonly userStore = inject(UserStore);
   private readonly settingsStore = inject(SettingsStore);
   private readonly prayerService = inject(PrayerService);
   private readonly habitService = inject(HabitService);
   private readonly quranService = inject(QuranService);
   private readonly statisticsService = inject(StatisticsService);
+  private readonly clock = inject(Clock);
   private readonly dialog = inject(MatDialog);
-  private intervalHandle: ReturnType<typeof setInterval> | null = null;
 
   readonly prayerNames = PRAYER_NAMES;
   readonly userName = computed(() => this.userStore.profile()?.name ?? '');
-  readonly today = new Date();
-  readonly hijriDate = formatHijri(this.today, this.settingsStore.settings().language);
+  readonly today = computed(() => new Date(this.clock.now()));
+  readonly hijriDate = computed(() => formatHijri(this.today(), this.settingsStore.settings().language));
 
   readonly greetingKey = computed(() => {
-    const hour = this.today.getHours();
+    const hour = this.today().getHours();
     if (hour < 12) return 'dashboard.greetingMorning';
     if (hour < 18) return 'dashboard.greetingAfternoon';
     return 'dashboard.greetingEvening';
@@ -51,12 +53,7 @@ export class DashboardPage implements OnDestroy {
   readonly schedule = this.prayerService.schedule;
   readonly prayerCompletionMap = this.prayerService.completionMap;
   readonly nextPrayer = this.prayerService.nextPrayer;
-
-  readonly now = signal(Date.now());
-  readonly countdownLabel = computed(() => {
-    const next = this.nextPrayer();
-    return next ? countdownToTime(next.time, this.now()) : '';
-  });
+  readonly countdownLabel = this.prayerService.countdownLabel;
 
   readonly todaysHabits = this.habitService.todaysHabits;
   readonly habitCompletionMap = this.habitService.completionMap;
@@ -64,13 +61,10 @@ export class DashboardPage implements OnDestroy {
   readonly quranProgress = this.quranService.progress;
 
   readonly upcomingReminders = computed(() => {
-    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    const nowMinutes = minutesSinceMidnight(this.today());
     return this.todaysHabits()
       .filter((h) => h.reminderTime && !this.habitCompletionMap().get(h.id!))
-      .filter((h) => {
-        const [hh, mm] = h.reminderTime!.split(':').map(Number);
-        return hh * 60 + mm >= nowMinutes;
-      })
+      .filter((h) => parseHHmmToMinutes(h.reminderTime!) >= nowMinutes)
       .sort((a, b) => a.reminderTime!.localeCompare(b.reminderTime!));
   });
 
@@ -90,11 +84,6 @@ export class DashboardPage implements OnDestroy {
     void this.prayerService.loadToday();
     void this.habitService.init();
     void this.quranService.init();
-    this.intervalHandle = setInterval(() => this.now.set(Date.now()), 30_000);
-  }
-
-  ngOnDestroy(): void {
-    if (this.intervalHandle) clearInterval(this.intervalHandle);
   }
 
   isPrayerCompleted(name: PrayerName): boolean {

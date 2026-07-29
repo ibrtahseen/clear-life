@@ -86,7 +86,7 @@
 
   <span class="habit-form__label">{{ 'habits.scheduleLabel' | translate }}</span>
   <div class="habit-form__weekdays">
-    @for (day of weekDays; track day.value) {
+    @for (day of weekDays(); track day.value) {
       <button
         type="button"
         class="habit-form__weekday"

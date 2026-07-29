@@ -19,9 +19,4 @@ export class SettingsStore {
     const saved = await this.settingsRepository.patch(partial);
     this.settings.set(saved);
   }
-
-  async replaceAll(settings: AppSettings): Promise<void> {
-    await this.settingsRepository.replace(settings);
-    this.settings.set(settings);
-  }
 }

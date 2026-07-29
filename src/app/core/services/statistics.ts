@@ -5,7 +5,7 @@ import { HabitHistoryRepository } from '../data/repositories/habit-history-repos
 import { PrayerHistoryRepository } from '../data/repositories/prayer-history-repository';
 import { QuranRepository } from '../data/repositories/quran-repository';
 import { FocusSessionRepository } from '../data/repositories/focus-session-repository';
-import { Habit } from '../models/habit.model';
+import { Habit, HabitHistoryEntry } from '../models/habit.model';
 import { HabitCategory, IsoDate, WeekDay } from '../models/common.model';
 import { PRAYER_NAMES } from '../models/prayer.model';
 import {
@@ -25,6 +25,20 @@ function summaryOf(scheduled: number, completed: number): CompletionSummary {
   };
 }
 
+/** True when `habit` is scheduled on `weekday` and already existed on `date`. */
+function isHabitScheduled(habit: Habit, weekday: WeekDay, date: IsoDate): boolean {
+  return habit.schedule.includes(weekday) && habit.createdAt.slice(0, 10) <= date;
+}
+
+/** Indexes habit-history entries for O(1) "was this habit completed on this date" lookups. */
+function completionIndex(history: HabitHistoryEntry[]): Set<string> {
+  const set = new Set<string>();
+  for (const entry of history) {
+    if (entry.completed) set.add(`${entry.habitId}:${entry.date}`);
+  }
+  return set;
+}
+
 @Service()
 export class Statistics {
   private readonly habitRepository = inject(HabitRepository);
@@ -36,19 +50,19 @@ export class Statistics {
   async habitCompletionForRange(start: IsoDate, end: IsoDate): Promise<CompletionSummary> {
     const habits = await this.habitRepository.getActive();
     const history = await this.habitHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(history);
     const days = isoRange(dayjs(start), dayjs(end));
     let scheduled = 0;
-    let completed = 0;
+    let completedCount = 0;
     for (const date of days) {
       const weekday = dayjs(date).day() as WeekDay;
-      const scheduledHabits = habits.filter((h) => h.schedule.includes(weekday) && h.createdAt.slice(0, 10) <= date);
-      scheduled += scheduledHabits.length;
-      for (const habit of scheduledHabits) {
-        const entry = history.find((h) => h.habitId === habit.id && h.date === date);
-        if (entry?.completed) completed++;
+      for (const habit of habits) {
+        if (!isHabitScheduled(habit, weekday, date)) continue;
+        scheduled++;
+        if (completed.has(`${habit.id}:${date}`)) completedCount++;
       }
     }
-    return summaryOf(scheduled, completed);
+    return summaryOf(scheduled, completedCount);
   }
 
   async prayerCompletionForRange(start: IsoDate, end: IsoDate): Promise<CompletionSummary> {
@@ -79,19 +93,10 @@ export class Statistics {
     return { start: toIsoDate(start), end: toIsoDate(end), habit, prayer };
   }
 
-  async yearlyCompletion(year: number) {
-    const start = dayjs(new Date(year, 0, 1));
-    const end = dayjs(new Date(year, 11, 31));
-    const [habit, prayer] = await Promise.all([
-      this.habitCompletionForRange(toIsoDate(start), toIsoDate(end)),
-      this.prayerCompletionForRange(toIsoDate(start), toIsoDate(end)),
-    ]);
-    return { start: toIsoDate(start), end: toIsoDate(end), habit, prayer };
-  }
-
   async categoryBreakdown(start: IsoDate, end: IsoDate): Promise<CategoryCompletion[]> {
     const habits = await this.habitRepository.getActive();
     const history = await this.habitHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(history);
     const days = isoRange(dayjs(start), dayjs(end));
     const byCategory = new Map<HabitCategory, { scheduled: number; completed: number }>();
 
@@ -99,24 +104,19 @@ export class Statistics {
       const bucket = byCategory.get(habit.category) ?? { scheduled: 0, completed: 0 };
       for (const date of days) {
         const weekday = dayjs(date).day() as WeekDay;
-        if (!habit.schedule.includes(weekday)) continue;
+        if (!isHabitScheduled(habit, weekday, date)) continue;
         bucket.scheduled++;
-        if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) {
+        if (completed.has(`${habit.id}:${date}`)) {
           bucket.completed++;
         }
       }
       byCategory.set(habit.category, bucket);
     }
 
-    return Array.from(byCategory.entries()).map(([category, { scheduled, completed }]) => ({
+    return Array.from(byCategory.entries()).map(([category, { scheduled, completed: completedCount }]) => ({
       category,
-      summary: summaryOf(scheduled, completed),
+      summary: summaryOf(scheduled, completedCount),
     }));
-  }
-
-  async habitStreak(habit: Habit): Promise<StreakInfo> {
-    const history = await this.habitHistoryRepository.getForHabit(habit.id!);
-    return this.computeStreak(history.filter((h) => h.completed).map((h) => h.date), habit.schedule);
   }
 
   async prayerStreak(): Promise<StreakInfo> {
@@ -180,15 +180,18 @@ export class Statistics {
     const habits = await this.habitRepository.getActive();
     const habitHistory = await this.habitHistoryRepository.getForRange(start, end);
     const prayerHistory = await this.prayerHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(habitHistory);
+    const completedPrayersByDate = new Map<IsoDate, number>();
+    for (const entry of prayerHistory) {
+      if (entry.completed) completedPrayersByDate.set(entry.date, (completedPrayersByDate.get(entry.date) ?? 0) + 1);
+    }
     const days = isoRange(dayjs(start), dayjs(end));
 
     return days.map((date) => {
       const weekday = dayjs(date).day() as WeekDay;
-      const scheduledHabits = habits.filter((h) => h.schedule.includes(weekday));
-      const completedHabits = scheduledHabits.filter(
-        (h) => habitHistory.find((entry) => entry.habitId === h.id && entry.date === date)?.completed,
-      ).length;
-      const completedPrayers = prayerHistory.filter((p) => p.date === date && p.completed).length;
+      const scheduledHabits = habits.filter((h) => isHabitScheduled(h, weekday, date));
+      const completedHabits = scheduledHabits.filter((h) => completed.has(`${h.id}:${date}`)).length;
+      const completedPrayers = completedPrayersByDate.get(date) ?? 0;
       const totalScheduled = scheduledHabits.length + PRAYER_NAMES.length;
       const totalCompleted = completedHabits + completedPrayers;
       return { date, rate: totalScheduled === 0 ? 0 : Math.round((totalCompleted / totalScheduled) * 100) };
@@ -215,18 +218,19 @@ export class Statistics {
   async habitPerformance(start: IsoDate, end: IsoDate): Promise<{ habit: Habit; summary: CompletionSummary }[]> {
     const habits = await this.habitRepository.getActive();
     const history = await this.habitHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(history);
     const days = isoRange(dayjs(start), dayjs(end));
 
     return habits.map((habit) => {
       let scheduled = 0;
-      let completed = 0;
+      let completedCount = 0;
       for (const date of days) {
         const weekday = dayjs(date).day() as WeekDay;
-        if (!habit.schedule.includes(weekday) || habit.createdAt.slice(0, 10) > date) continue;
+        if (!isHabitScheduled(habit, weekday, date)) continue;
         scheduled++;
-        if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) completed++;
+        if (completed.has(`${habit.id}:${date}`)) completedCount++;
       }
-      return { habit, summary: summaryOf(scheduled, completed) };
+      return { habit, summary: summaryOf(scheduled, completedCount) };
     });
   }
 
@@ -234,16 +238,17 @@ export class Statistics {
   async habitCompletionByWeekday(start: IsoDate, end: IsoDate): Promise<{ day: WeekDay; summary: CompletionSummary }[]> {
     const habits = await this.habitRepository.getActive();
     const history = await this.habitHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(history);
     const days = isoRange(dayjs(start), dayjs(end));
     const buckets = new Map<WeekDay, { scheduled: number; completed: number }>();
 
     for (const date of days) {
       const weekday = dayjs(date).day() as WeekDay;
       const bucket = buckets.get(weekday) ?? { scheduled: 0, completed: 0 };
-      const scheduledHabits = habits.filter((h) => h.schedule.includes(weekday) && h.createdAt.slice(0, 10) <= date);
-      bucket.scheduled += scheduledHabits.length;
-      for (const habit of scheduledHabits) {
-        if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) bucket.completed++;
+      for (const habit of habits) {
+        if (!isHabitScheduled(habit, weekday, date)) continue;
+        bucket.scheduled++;
+        if (completed.has(`${habit.id}:${date}`)) bucket.completed++;
       }
       buckets.set(weekday, bucket);
     }
@@ -261,6 +266,7 @@ export class Statistics {
   ): Promise<{ morning: CompletionSummary; evening: CompletionSummary }> {
     const habits = await this.habitRepository.getActive();
     const history = await this.habitHistoryRepository.getForRange(start, end);
+    const completed = completionIndex(history);
     const days = isoRange(dayjs(start), dayjs(end));
     const reminderHour = (h: Habit) => (h.reminderTime ? Number(h.reminderTime.split(':')[0]) : null);
     const morningHabits = habits.filter((h) => {
@@ -274,16 +280,16 @@ export class Statistics {
 
     const rateFor = (group: Habit[]): CompletionSummary => {
       let scheduled = 0;
-      let completed = 0;
+      let completedCount = 0;
       for (const date of days) {
         const weekday = dayjs(date).day() as WeekDay;
-        const scheduledHabits = group.filter((h) => h.schedule.includes(weekday) && h.createdAt.slice(0, 10) <= date);
-        scheduled += scheduledHabits.length;
-        for (const habit of scheduledHabits) {
-          if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) completed++;
+        for (const habit of group) {
+          if (!isHabitScheduled(habit, weekday, date)) continue;
+          scheduled++;
+          if (completed.has(`${habit.id}:${date}`)) completedCount++;
         }
       }
-      return summaryOf(scheduled, completed);
+      return summaryOf(scheduled, completedCount);
     };
 
     return { morning: rateFor(morningHabits), evening: rateFor(eveningHabits) };

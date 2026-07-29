@@ -10,10 +10,11 @@ import { FocusTimer } from '../../../core/services/focus-timer';
 import { Notification } from '../../../core/services/notification';
 import { FocusCountdown } from '../../../core/models/focus.model';
 import { Confirm } from '../../../shared/services/confirm';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 @Component({
   selector: 'app-stay-focus-page',
-  imports: [FormsModule, TranslatePipe, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
+  imports: [FormsModule, TranslatePipe, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, EmptyState],
   templateUrl: './stay-focus-page.html',
   styleUrl: './stay-focus-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -55,6 +55,7 @@ export class FocusTimer {
   run(id: number): void {
     const countdown = this.countdowns().find((c) => c.id === id);
     if (!countdown) return;
+    if (this.active()) this.stop();
     this.startPhase(countdown, 'focus');
   }
 

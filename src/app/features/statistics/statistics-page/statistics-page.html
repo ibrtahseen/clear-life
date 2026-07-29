@@ -5,7 +5,7 @@
     <section class="statistics__insights">
       <h2>{{ 'statistics.insightsTitle' | translate }}</h2>
       @if (insightViewModels().length === 0) {
-        <p class="statistics__empty">{{ 'statistics.noInsights' | translate }}</p>
+        <app-empty-state>{{ 'statistics.noInsights' | translate }}</app-empty-state>
       } @else {
         <div class="statistics__insight-list">
           @for (insight of insightViewModels(); track insight.text) {
@@ -35,7 +35,7 @@
         @if (habitPerformanceChartData(); as chartData) {
           <canvas baseChart [type]="'bar'" [data]="chartData" [options]="habitPerformanceOptions"></canvas>
         } @else {
-          <p class="statistics__empty">{{ 'statistics.noData' | translate }}</p>
+          <app-empty-state>{{ 'statistics.noData' | translate }}</app-empty-state>
         }
       </div>
     </section>
@@ -49,6 +49,6 @@
       </div>
     </section>
   } @else {
-    <p class="statistics__empty">{{ 'common.loading' | translate }}</p>
+    <app-empty-state>{{ 'common.loading' | translate }}</app-empty-state>
   }
 </div>

@@ -8,10 +8,11 @@ import { Habit as HabitService } from '../../../core/services/habit';
 import { Category as CategoryService } from '../../../core/services/category';
 import { Habit as HabitModel } from '../../../core/models/habit.model';
 import { Confirm } from '../../../shared/services/confirm';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 @Component({
   selector: 'app-archived-habits-dialog',
-  imports: [TranslatePipe, MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [TranslatePipe, MatDialogModule, MatButtonModule, MatIconModule, EmptyState],
   templateUrl: './archived-habits-dialog.html',
   styleUrl: './archived-habits-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,11 +26,7 @@ export class ArchivedHabitsDialog {
   readonly habits = this.habitService.archivedHabits;
 
   categoryLabel(habit: HabitModel): string {
-    if (habit.category === 'custom' && habit.customCategoryId != null) {
-      const custom = this.categoryService.categories().find((c) => c.id === habit.customCategoryId);
-      if (custom) return custom.name;
-    }
-    return this.translate.instant(`habitCategories.${habit.category}`);
+    return this.categoryService.labelFor(habit);
   }
 
   async restore(habit: HabitModel): Promise<void> {

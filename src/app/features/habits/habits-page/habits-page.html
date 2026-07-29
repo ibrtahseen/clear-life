@@ -47,7 +47,7 @@
         type="button"
         class="habits__day-btn"
         [class.habits__day-btn--active]="viewMode() === 'day' && selectedDate() === date"
-        [class.habits__day-btn--today]="date === todayIsoDate"
+        [class.habits__day-btn--today]="date === todayIsoDate()"
         (click)="selectDay(date)"
       >
         <span class="habits__day-btn-name">{{ weekdayLabel(date) }}</span>
@@ -57,7 +57,7 @@
   </div>
 
   @if (displayedHabits().length === 0) {
-    <p class="habits__empty">{{ 'habits.empty' | translate }}</p>
+    <app-empty-state variant="spacious">{{ 'habits.empty' | translate }}</app-empty-state>
   } @else {
     <div
       class="habits__list"
