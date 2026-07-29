@@ -103,6 +103,16 @@
   }
 }
 
+.calendar__day-focus {
+  font-size: 0.55rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.05rem 0.3rem;
+  border-radius: 999px;
+  color: var(--mat-sys-primary);
+  background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+}
+
 .calendar__detail {
   margin-top: 1.5rem;
   padding: 1.1rem 1.25rem;
@@ -161,4 +171,43 @@
     background: color-mix(in srgb, var(--mat-sys-primary) 18%, transparent);
     color: var(--mat-sys-primary);
   }
+}
+
+.calendar__focus-total {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+
+  strong {
+    color: var(--mat-sys-primary);
+  }
+}
+
+.calendar__focus-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.calendar__focus-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent);
+  font-size: 0.8rem;
+}
+
+.calendar__focus-item-name {
+  font-weight: 600;
+}
+
+.calendar__focus-item-meta {
+  opacity: 0.65;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }

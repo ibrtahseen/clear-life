@@ -160,14 +160,32 @@
   },
   "statistics": {
     "title": "Statistics",
-    "monthlyCompletion": "Monthly Completion",
-    "categoryDistribution": "Category Distribution",
-    "dailyHeatmap": "Last 6 Weeks",
-    "prayerStreak": "Prayer Streak",
-    "habitStreak": "Habit Streak",
-    "longestStreak": "Longest Streak",
     "quranPagesRead": "Quran Pages Read",
-    "noData": "Not enough data yet."
+    "noData": "Not enough data yet.",
+    "habitPerformance": "Habit Performance",
+    "focusTimeTrend": "Focus Time (Last 14 Days)",
+    "totalFocusTime": "Focus Time This Month",
+    "insightsTitle": "Insights",
+    "noInsights": "Keep going — check back once you have more data for personalized insights.",
+    "insightBestWeekday": "You complete {{rate}}% of your habits on {{day}}s.",
+    "insightFocusWindow": "Your focus sessions are longest between {{start}} and {{end}}.",
+    "insightTimeOfDayGap": "You miss your {{worse}} habits more often than your {{better}} habits.",
+    "insightMonthImproved": "Your completion rate has improved by {{percent}}% compared to last month.",
+    "insightMonthDeclined": "Your completion rate has dropped by {{percent}}% compared to last month.",
+    "insightBestHabit": "Your most consistent habit is \"{{title}}\" at {{rate}}% completion this month.",
+    "weekdayFull": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    },
+    "timeSlot": {
+      "morning": "morning",
+      "evening": "evening"
+    }
   },
   "notifications": {
     "prayerReminder": "It's time for {{prayer}} prayer.",
@@ -201,6 +219,8 @@
     "deleteConfirmHeader": "Delete countdown?",
     "deleteConfirmMessage": "Delete \"{{name}}\"? This cannot be undone.",
     "focusDoneBody": "Focus time is up for \"{{name}}\" — take a break.",
-    "breakDoneBody": "Break's over for \"{{name}}\" — session complete."
+    "breakDoneBody": "Break's over for \"{{name}}\" — session complete.",
+    "noSessions": "No focus sessions on this day.",
+    "totalFocused": "Total focused"
   }
 }

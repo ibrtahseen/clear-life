@@ -9,6 +9,7 @@ import { StatisticsRepository } from '../data/repositories/statistics-repository
 import { NotificationRepository } from '../data/repositories/notification-repository';
 import { CalendarRepository } from '../data/repositories/calendar-repository';
 import { AppStateRepository } from '../data/repositories/app-state-repository';
+import { FocusSessionRepository } from '../data/repositories/focus-session-repository';
 import { BACKUP_SCHEMA_VERSION, ClearLifeBackup } from '../models/backup.model';
 
 export const APP_VERSION = '1.0.0';
@@ -27,6 +28,7 @@ export class Backup {
   private readonly notificationRepository = inject(NotificationRepository);
   private readonly calendarRepository = inject(CalendarRepository);
   private readonly appStateRepository = inject(AppStateRepository);
+  private readonly focusSessionRepository = inject(FocusSessionRepository);
 
   async buildBackup(): Promise<ClearLifeBackup> {
     const [
@@ -42,6 +44,7 @@ export class Backup {
       notifications,
       calendarNotes,
       appState,
+      focusSessions,
     ] = await Promise.all([
       this.userRepository.get(),
       this.settingsRepository.get(),
@@ -55,6 +58,7 @@ export class Backup {
       this.notificationRepository.getAll(),
       this.calendarRepository.getAll(),
       this.appStateRepository.get(),
+      this.focusSessionRepository.getAll(),
     ]);
 
     return {
@@ -74,6 +78,7 @@ export class Backup {
         notifications,
         calendarNotes,
         appState,
+        focusSessions,
       },
     };
   }
@@ -152,6 +157,7 @@ export class Backup {
       this.notificationRepository.clear(),
       this.calendarRepository.clear(),
       this.appStateRepository.clear(),
+      this.focusSessionRepository.clear(),
     ]);
 
     if (data.user) await this.userRepository.replace(data.user);
@@ -166,6 +172,7 @@ export class Backup {
     await this.notificationRepository.bulkPut(data.notifications);
     await this.calendarRepository.bulkPut(data.calendarNotes);
     if (data.appState) await this.appStateRepository.save({ ...data.appState, onboardingCompleted: true });
+    await this.focusSessionRepository.bulkPut(data.focusSessions ?? []);
   }
 
   /** Hook point for future schema migrations between backupVersion releases. */

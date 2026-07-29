@@ -160,14 +160,32 @@
   },
   "statistics": {
     "title": "الإحصائيات",
-    "monthlyCompletion": "الإنجاز الشهري",
-    "categoryDistribution": "توزيع الفئات",
-    "dailyHeatmap": "آخر 6 أسابيع",
-    "prayerStreak": "تتابع الصلاة",
-    "habitStreak": "تتابع العادات",
-    "longestStreak": "أطول تتابع",
     "quranPagesRead": "صفحات القرآن المقروءة",
-    "noData": "لا توجد بيانات كافية بعد."
+    "noData": "لا توجد بيانات كافية بعد.",
+    "habitPerformance": "أداء العادات",
+    "focusTimeTrend": "وقت التركيز (آخر 14 يومًا)",
+    "totalFocusTime": "وقت التركيز هذا الشهر",
+    "insightsTitle": "رؤى",
+    "noInsights": "واصل التقدم — عد لاحقًا للحصول على رؤى مخصصة عند توفر مزيد من البيانات.",
+    "insightBestWeekday": "تكمل {{rate}}% من عاداتك في أيام {{day}}.",
+    "insightFocusWindow": "تكون جلسات تركيزك أطول بين {{start}} و {{end}}.",
+    "insightTimeOfDayGap": "تفوتك عادات {{worse}} أكثر من عادات {{better}}.",
+    "insightMonthImproved": "تحسّن معدل إنجازك بنسبة {{percent}}% مقارنة بالشهر الماضي.",
+    "insightMonthDeclined": "انخفض معدل إنجازك بنسبة {{percent}}% مقارنة بالشهر الماضي.",
+    "insightBestHabit": "أكثر عاداتك انتظامًا هي \"{{title}}\" بنسبة إنجاز {{rate}}% هذا الشهر.",
+    "weekdayFull": {
+      "0": "الأحد",
+      "1": "الاثنين",
+      "2": "الثلاثاء",
+      "3": "الأربعاء",
+      "4": "الخميس",
+      "5": "الجمعة",
+      "6": "السبت"
+    },
+    "timeSlot": {
+      "morning": "الصباح",
+      "evening": "المساء"
+    }
   },
   "notifications": {
     "prayerReminder": "حان وقت صلاة {{prayer}}.",
@@ -201,6 +219,8 @@
     "deleteConfirmHeader": "حذف العداد؟",
     "deleteConfirmMessage": "حذف \"{{name}}\"؟ لا يمكن التراجع عن هذا.",
     "focusDoneBody": "انتهى وقت التركيز لـ \"{{name}}\" — خذ استراحة.",
-    "breakDoneBody": "انتهت الاستراحة لـ \"{{name}}\" — اكتملت الجلسة."
+    "breakDoneBody": "انتهت الاستراحة لـ \"{{name}}\" — اكتملت الجلسة.",
+    "noSessions": "لا توجد جلسات تركيز في هذا اليوم.",
+    "totalFocused": "إجمالي التركيز"
   }
 }

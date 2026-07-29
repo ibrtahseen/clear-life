@@ -1,35 +1,32 @@
 import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { MatIconModule } from '@angular/material/icon';
 import { BaseChartDirective, provideCharts } from 'ng2-charts';
-import {
-  ArcElement,
-  BarController,
-  BarElement,
-  CategoryScale,
-  DoughnutController,
-  Legend,
-  LinearScale,
-  Tooltip,
-  type ChartConfiguration,
-} from 'chart.js';
+import { BarController, BarElement, CategoryScale, LinearScale, Tooltip, type ChartConfiguration } from 'chart.js';
 import dayjs from 'dayjs';
 
-import { SettingsStore } from '../../../core/services/settings-store';
 import { Statistics as StatisticsService } from '../../../core/services/statistics';
-import { HabitRepository } from '../../../core/data/repositories/habit-repository';
-import { toIsoDate } from '../../../core/utils/date.util';
+import { Insights as InsightsService } from '../../../core/services/insights';
+import { Insight, InsightTone } from '../../../core/models/statistics.model';
+import { toIsoDate, formatDuration, formatTime } from '../../../core/utils/date.util';
 
 const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899'];
 
+interface InsightViewModel {
+  icon: string;
+  tone: InsightTone;
+  text: string;
+}
+
 @Component({
   selector: 'app-statistics-page',
-  imports: [TranslatePipe, BaseChartDirective],
-  // Only 'bar' and 'doughnut' charts are used here — registering the full default
-  // set (radar, bubble, scatter, time scales, etc.) via withDefaultRegisterables()
-  // pulled a large chunk of unused chart.js into this page's bundle.
+  imports: [TranslatePipe, MatIconModule, BaseChartDirective],
+  // Only 'bar' charts are used here — registering the full default set (radar,
+  // bubble, scatter, time scales, etc.) via withDefaultRegisterables() pulled a
+  // large chunk of unused chart.js into this page's bundle.
   providers: [
     provideCharts({
-      registerables: [BarController, DoughnutController, CategoryScale, LinearScale, BarElement, ArcElement, Legend, Tooltip],
+      registerables: [BarController, CategoryScale, LinearScale, BarElement, Tooltip],
     }),
   ],
   templateUrl: './statistics-page.html',
@@ -37,9 +34,8 @@ const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatisticsPage {
-  private readonly settingsStore = inject(SettingsStore);
   private readonly statisticsService = inject(StatisticsService);
-  private readonly habitRepository = inject(HabitRepository);
+  private readonly insightsService = inject(InsightsService);
   private readonly translate = inject(TranslateService);
 
   private readonly today = new Date();
@@ -47,96 +43,146 @@ export class StatisticsPage {
   private readonly month = this.today.getMonth() + 1;
 
   private readonly statsResource = resource({
-    params: () => ({ firstDayOfWeek: this.settingsStore.settings().firstDayOfWeek }),
-    loader: async ({ params }) => {
+    params: () => ({}),
+    loader: async () => {
       const monthStart = toIsoDate(dayjs(new Date(this.year, this.month - 1, 1)));
       const monthEnd = toIsoDate(dayjs(new Date(this.year, this.month - 1, 1)).endOf('month'));
-      const heatmapStart = toIsoDate(dayjs().subtract(34, 'day'));
-      const heatmapEnd = toIsoDate(dayjs());
+      const focusChartStart = toIsoDate(dayjs().subtract(13, 'day'));
+      const focusChartEnd = toIsoDate(dayjs());
 
-      const [weekly, monthly, category, heatmap, prayerStreak, quranPages, habits] = await Promise.all([
-        this.statisticsService.weeklyCompletion(this.today, params.firstDayOfWeek),
-        this.statisticsService.monthlyCompletion(this.year, this.month),
-        this.statisticsService.categoryBreakdown(monthStart, monthEnd),
-        this.statisticsService.heatmap(heatmapStart, heatmapEnd),
-        this.statisticsService.prayerStreak(),
+      const [quranPages, habitPerformance, focusByDay, monthlyFocus, insights] = await Promise.all([
         this.statisticsService.quranPagesRead(),
-        this.habitRepository.getActive(),
+        this.statisticsService.habitPerformance(monthStart, monthEnd),
+        this.statisticsService.focusSecondsByDay(focusChartStart, focusChartEnd),
+        this.statisticsService.focusSecondsByDay(monthStart, monthEnd),
+        this.insightsService.generate(),
       ]);
 
-      const habitStreaks = await Promise.all(habits.map((h) => this.statisticsService.habitStreak(h)));
-      const bestCurrent = habitStreaks.reduce((max, s) => Math.max(max, s.current), 0);
-      const bestLongest = habitStreaks.reduce((max, s) => Math.max(max, s.longest), 0);
+      const monthlyFocusSeconds = monthlyFocus.reduce((sum, d) => sum + d.seconds, 0);
 
-      return { weekly, monthly, category, heatmap, prayerStreak, quranPages, bestCurrent, bestLongest };
+      return {
+        quranPages,
+        habitPerformance: habitPerformance.sort((a, b) => b.summary.rate - a.summary.rate),
+        focusByDay,
+        monthlyFocusSeconds,
+        insights,
+      };
     },
   });
   readonly stats = this.statsResource.value;
 
-  readonly weeklyChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
+  readonly insightViewModels = computed<InsightViewModel[]>(() => {
+    const data = this.stats();
+    if (!data) return [];
+    return data.insights.map((insight) => this.toInsightViewModel(insight));
+  });
+
+  private toInsightViewModel(insight: Insight): InsightViewModel {
+    switch (insight.kind) {
+      case 'bestWeekday':
+        return {
+          icon: 'calendar_month',
+          tone: insight.tone,
+          text: this.translate.instant('statistics.insightBestWeekday', {
+            rate: insight.params['rate'],
+            day: this.translate.instant(`statistics.weekdayFull.${insight.params['day']}`),
+          }),
+        };
+      case 'focusWindow':
+        return {
+          icon: 'bolt',
+          tone: insight.tone,
+          text: this.translate.instant('statistics.insightFocusWindow', {
+            start: formatTime(`${insight.params['startHour']}:00`),
+            end: formatTime(`${insight.params['endHour']}:00`),
+          }),
+        };
+      case 'timeOfDayGap':
+        return {
+          icon: 'schedule',
+          tone: insight.tone,
+          text: this.translate.instant('statistics.insightTimeOfDayGap', {
+            worse: this.translate.instant(`statistics.timeSlot.${insight.params['worseSlot']}`),
+            better: this.translate.instant(`statistics.timeSlot.${insight.params['betterSlot']}`),
+          }),
+        };
+      case 'monthComparison':
+        return {
+          icon: insight.tone === 'positive' ? 'trending_up' : 'trending_down',
+          tone: insight.tone,
+          text: this.translate.instant(
+            insight.tone === 'positive' ? 'statistics.insightMonthImproved' : 'statistics.insightMonthDeclined',
+            { percent: insight.params['percent'] },
+          ),
+        };
+      case 'bestHabit':
+        return {
+          icon: 'military_tech',
+          tone: insight.tone,
+          text: this.translate.instant('statistics.insightBestHabit', {
+            title: insight.params['title'],
+            rate: insight.params['rate'],
+          }),
+        };
+    }
+  }
+
+  readonly habitPerformanceChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
+    const data = this.stats();
+    if (!data || data.habitPerformance.length === 0) return null;
+    return {
+      labels: data.habitPerformance.map((p) => p.habit.title),
+      datasets: [
+        {
+          label: this.translate.instant('statistics.habitPerformance'),
+          data: data.habitPerformance.map((p) => p.summary.rate),
+          backgroundColor: data.habitPerformance.map((p) => p.habit.color || CHART_COLORS[0]),
+          borderRadius: 6,
+        },
+      ],
+    };
+  });
+
+  readonly focusChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
     const data = this.stats();
     if (!data) return null;
     return {
-      labels: [this.translate.instant('habits.title'), this.translate.instant('prayers.title')],
+      labels: data.focusByDay.map((d) => dayjs(d.date).format('MMM D')),
       datasets: [
         {
-          label: this.translate.instant('dashboard.weeklyCompletion'),
-          data: [data.weekly.habit.rate, data.weekly.prayer.rate],
-          backgroundColor: [CHART_COLORS[0], CHART_COLORS[1]],
-          borderRadius: 8,
+          label: this.translate.instant('statistics.focusTimeTrend'),
+          data: data.focusByDay.map((d) => Math.round(d.seconds / 60)),
+          backgroundColor: CHART_COLORS[4],
+          borderRadius: 6,
         },
       ],
     };
   });
 
-  readonly monthlyChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
+  readonly monthlyFocusLabel = computed(() => {
     const data = this.stats();
-    if (!data) return null;
-    return {
-      labels: [this.translate.instant('habits.title'), this.translate.instant('prayers.title')],
-      datasets: [
-        {
-          label: this.translate.instant('statistics.monthlyCompletion'),
-          data: [data.monthly.habit.rate, data.monthly.prayer.rate],
-          backgroundColor: [CHART_COLORS[2], CHART_COLORS[3]],
-          borderRadius: 8,
-        },
-      ],
-    };
+    return data ? formatDuration(data.monthlyFocusSeconds) : '';
   });
 
-  readonly categoryChartData = computed<ChartConfiguration<'doughnut'>['data'] | null>(() => {
-    const data = this.stats();
-    if (!data || data.category.length === 0) return null;
-    return {
-      labels: data.category.map((c) => this.translate.instant(`habitCategories.${c.category}`)),
-      datasets: [
-        {
-          data: data.category.map((c) => c.summary.rate),
-          backgroundColor: data.category.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
-        },
-      ],
-    };
-  });
-
-  readonly chartOptions: ChartConfiguration['options'] = {
+  readonly habitPerformanceOptions: ChartConfiguration['options'] = {
+    indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, max: 100 } },
+    scales: { x: { beginAtZero: true, max: 100 } },
   };
 
-  readonly doughnutOptions: ChartConfiguration['options'] = {
+  readonly focusChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => formatDuration(Number(ctx.raw) * 60),
+        },
+      },
+    },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 30 } } },
   };
-
-  heatmapCellClass(rate: number): string {
-    if (rate === 0) return 'heat-0';
-    if (rate < 40) return 'heat-1';
-    if (rate < 70) return 'heat-2';
-    if (rate < 100) return 'heat-3';
-    return 'heat-4';
-  }
 }

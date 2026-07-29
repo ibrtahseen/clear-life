@@ -9,9 +9,10 @@ import { Statistics as StatisticsService } from '../../../core/services/statisti
 import { HabitRepository } from '../../../core/data/repositories/habit-repository';
 import { HabitHistoryRepository } from '../../../core/data/repositories/habit-history-repository';
 import { PrayerHistoryRepository } from '../../../core/data/repositories/prayer-history-repository';
+import { FocusSessionRepository } from '../../../core/data/repositories/focus-session-repository';
 import { PRAYER_NAMES } from '../../../core/models/prayer.model';
 import { WeekDay } from '../../../core/models/common.model';
-import { toIsoDate, startOfWeek } from '../../../core/utils/date.util';
+import { toIsoDate, startOfWeek, formatDuration, formatTime } from '../../../core/utils/date.util';
 import { formatHijri, toHijri } from '../../../core/utils/hijri.util';
 
 interface CalendarDay {
@@ -21,6 +22,7 @@ interface CalendarDay {
   isCurrentMonth: boolean;
   isToday: boolean;
   rate: number;
+  focusSeconds: number;
 }
 
 @Component({
@@ -36,6 +38,7 @@ export class CalendarPage {
   private readonly habitRepository = inject(HabitRepository);
   private readonly habitHistoryRepository = inject(HabitHistoryRepository);
   private readonly prayerHistoryRepository = inject(PrayerHistoryRepository);
+  private readonly focusSessionRepository = inject(FocusSessionRepository);
 
   readonly prayerNames = PRAYER_NAMES;
   readonly viewDate = signal(dayjs());
@@ -66,11 +69,22 @@ export class CalendarPage {
     },
   });
 
+  private readonly focusResource = resource({
+    params: () => ({ month: this.viewDate().format('YYYY-MM'), firstDayOfWeek: this.firstDayOfWeek() }),
+    loader: async ({ params }) => {
+      const monthStart = dayjs(params.month + '-01');
+      const gridStart = startOfWeek(monthStart, params.firstDayOfWeek as WeekDay);
+      const gridEnd = gridStart.add(41, 'day');
+      return this.statisticsService.focusSecondsByDay(toIsoDate(gridStart), toIsoDate(gridEnd));
+    },
+  });
+
   readonly days = computed<CalendarDay[]>(() => {
     const view = this.viewDate();
     const monthStart = view.startOf('month');
     const gridStart = startOfWeek(monthStart, this.firstDayOfWeek());
     const rateByDate = new Map((this.heatmapResource.value() ?? []).map((d) => [d.date, d.rate]));
+    const focusByDate = new Map((this.focusResource.value() ?? []).map((d) => [d.date, d.seconds]));
 
     return Array.from({ length: 42 }, (_, i) => {
       const date = gridStart.add(i, 'day');
@@ -82,6 +96,7 @@ export class CalendarPage {
         isCurrentMonth: date.month() === monthStart.month(),
         isToday: iso === this.todayIso,
         rate: rateByDate.get(iso) ?? 0,
+        focusSeconds: focusByDate.get(iso) ?? 0,
       };
     });
   });
@@ -90,12 +105,14 @@ export class CalendarPage {
     params: () => ({ date: this.selectedDate() }),
     loader: async ({ params }) => {
       const weekday = dayjs(params.date).day() as WeekDay;
-      const [allHabits, habitHistory, prayerHistory] = await Promise.all([
+      const [allHabits, habitHistory, prayerHistory, focusSessions] = await Promise.all([
         this.habitRepository.getActive(),
         this.habitHistoryRepository.getForDate(params.date),
         this.prayerHistoryRepository.getForDate(params.date),
+        this.focusSessionRepository.getForDate(params.date),
       ]);
       const scheduledHabits = allHabits.filter((h) => h.schedule.includes(weekday));
+      const sortedSessions = focusSessions.slice().sort((a, b) => a.startedAt.localeCompare(b.startedAt));
       return {
         habits: scheduledHabits.map((h) => ({
           title: h.title,
@@ -107,6 +124,12 @@ export class CalendarPage {
           name,
           completed: prayerHistory.find((p) => p.prayerName === name)?.completed ?? false,
         })),
+        focusSessions: sortedSessions.map((s) => ({
+          name: s.countdownName,
+          durationSeconds: s.durationSeconds,
+          startedAt: s.startedAt,
+        })),
+        focusTotalSeconds: sortedSessions.reduce((sum, s) => sum + s.durationSeconds, 0),
       };
     },
   });
@@ -130,5 +153,22 @@ export class CalendarPage {
     if (rate < 70) return 'heat-2';
     if (rate < 100) return 'heat-3';
     return 'heat-4';
+  }
+
+  /** Compact "Nm"/"NhNm" form for the tight space inside a day cell. */
+  focusCellLabel(seconds: number): string {
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return rest > 0 ? `${hours}h${rest}m` : `${hours}h`;
+  }
+
+  formatFocusDuration(seconds: number): string {
+    return formatDuration(seconds);
+  }
+
+  formatSessionTime(iso: string): string {
+    return formatTime(iso);
   }
 }

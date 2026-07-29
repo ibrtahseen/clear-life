@@ -31,6 +31,9 @@
         <span class="calendar__day-number">{{ day.dayNumber }}</span>
         <span class="calendar__day-hijri">{{ day.hijriDay }}</span>
         <span class="calendar__day-dot" [class]="heatClass(day.rate)"></span>
+        @if (day.focusSeconds > 0) {
+          <span class="calendar__day-focus">{{ focusCellLabel(day.focusSeconds) }}</span>
+        }
       </button>
     }
   </div>
@@ -63,6 +66,27 @@
               </span>
             }
           </div>
+        }
+      </div>
+
+      <div class="calendar__detail-group">
+        <h3>{{ 'stayFocus.title' | translate }}</h3>
+        @if (detail.focusSessions.length === 0) {
+          <p class="calendar__empty">{{ 'stayFocus.noSessions' | translate }}</p>
+        } @else {
+          <p class="calendar__focus-total">
+            {{ 'stayFocus.totalFocused' | translate }}: <strong>{{ formatFocusDuration(detail.focusTotalSeconds) }}</strong>
+          </p>
+          <ul class="calendar__focus-list">
+            @for (session of detail.focusSessions; track session.startedAt) {
+              <li class="calendar__focus-item">
+                <span class="calendar__focus-item-name">{{ session.name }}</span>
+                <span class="calendar__focus-item-meta">
+                  {{ formatSessionTime(session.startedAt) }} &middot; {{ formatFocusDuration(session.durationSeconds) }}
+                </span>
+              </li>
+            }
+          </ul>
         }
       </div>
     </section>

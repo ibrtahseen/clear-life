@@ -5,6 +5,7 @@ import { PrayerHistoryEntry } from './prayer.model';
 import { QuranProgressState, QuranReadingLogEntry } from './quran.model';
 import { WeeklyStatisticsSnapshot, MonthlyStatisticsSnapshot } from './statistics.model';
 import { NotificationLogEntry, CalendarNote, AppState } from './notification.model';
+import { FocusSessionEntry } from './focus.model';
 
 export const BACKUP_SCHEMA_VERSION = 1;
 
@@ -25,5 +26,6 @@ export interface ClearLifeBackup {
     notifications: NotificationLogEntry[];
     calendarNotes: CalendarNote[];
     appState: AppState | null;
+    focusSessions: FocusSessionEntry[];
   };
 }

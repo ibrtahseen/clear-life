@@ -4,6 +4,7 @@ import { HabitRepository } from '../data/repositories/habit-repository';
 import { HabitHistoryRepository } from '../data/repositories/habit-history-repository';
 import { PrayerHistoryRepository } from '../data/repositories/prayer-history-repository';
 import { QuranRepository } from '../data/repositories/quran-repository';
+import { FocusSessionRepository } from '../data/repositories/focus-session-repository';
 import { Habit } from '../models/habit.model';
 import { HabitCategory, IsoDate, WeekDay } from '../models/common.model';
 import { PRAYER_NAMES } from '../models/prayer.model';
@@ -30,6 +31,7 @@ export class Statistics {
   private readonly habitHistoryRepository = inject(HabitHistoryRepository);
   private readonly prayerHistoryRepository = inject(PrayerHistoryRepository);
   private readonly quranRepository = inject(QuranRepository);
+  private readonly focusSessionRepository = inject(FocusSessionRepository);
 
   async habitCompletionForRange(start: IsoDate, end: IsoDate): Promise<CompletionSummary> {
     const habits = await this.habitRepository.getActive();
@@ -196,5 +198,137 @@ export class Statistics {
   async quranPagesRead(): Promise<number> {
     const progress = await this.quranRepository.getProgress();
     return progress.completions * QURAN_TOTAL_PAGES + (progress.currentPage - 1);
+  }
+
+  /** Total focused seconds per day over the range, including days with no sessions. */
+  async focusSecondsByDay(start: IsoDate, end: IsoDate): Promise<{ date: IsoDate; seconds: number }[]> {
+    const sessions = await this.focusSessionRepository.getForRange(start, end);
+    const days = isoRange(dayjs(start), dayjs(end));
+    const secondsByDate = new Map<IsoDate, number>();
+    for (const session of sessions) {
+      secondsByDate.set(session.date, (secondsByDate.get(session.date) ?? 0) + session.durationSeconds);
+    }
+    return days.map((date) => ({ date, seconds: secondsByDate.get(date) ?? 0 }));
+  }
+
+  /** Per-habit completion rate over the range, for ranking/charting individual habit performance. */
+  async habitPerformance(start: IsoDate, end: IsoDate): Promise<{ habit: Habit; summary: CompletionSummary }[]> {
+    const habits = await this.habitRepository.getActive();
+    const history = await this.habitHistoryRepository.getForRange(start, end);
+    const days = isoRange(dayjs(start), dayjs(end));
+
+    return habits.map((habit) => {
+      let scheduled = 0;
+      let completed = 0;
+      for (const date of days) {
+        const weekday = dayjs(date).day() as WeekDay;
+        if (!habit.schedule.includes(weekday) || habit.createdAt.slice(0, 10) > date) continue;
+        scheduled++;
+        if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) completed++;
+      }
+      return { habit, summary: summaryOf(scheduled, completed) };
+    });
+  }
+
+  /** Habit completion rate broken down by day of week, for spotting "you do best on X" patterns. */
+  async habitCompletionByWeekday(start: IsoDate, end: IsoDate): Promise<{ day: WeekDay; summary: CompletionSummary }[]> {
+    const habits = await this.habitRepository.getActive();
+    const history = await this.habitHistoryRepository.getForRange(start, end);
+    const days = isoRange(dayjs(start), dayjs(end));
+    const buckets = new Map<WeekDay, { scheduled: number; completed: number }>();
+
+    for (const date of days) {
+      const weekday = dayjs(date).day() as WeekDay;
+      const bucket = buckets.get(weekday) ?? { scheduled: 0, completed: 0 };
+      const scheduledHabits = habits.filter((h) => h.schedule.includes(weekday) && h.createdAt.slice(0, 10) <= date);
+      bucket.scheduled += scheduledHabits.length;
+      for (const habit of scheduledHabits) {
+        if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) bucket.completed++;
+      }
+      buckets.set(weekday, bucket);
+    }
+
+    return ([0, 1, 2, 3, 4, 5, 6] as WeekDay[]).map((day) => {
+      const bucket = buckets.get(day) ?? { scheduled: 0, completed: 0 };
+      return { day, summary: summaryOf(bucket.scheduled, bucket.completed) };
+    });
+  }
+
+  /** Completion rate for habits reminded in the morning (before noon) vs the evening (5pm+). */
+  async habitCompletionByTimeOfDay(
+    start: IsoDate,
+    end: IsoDate,
+  ): Promise<{ morning: CompletionSummary; evening: CompletionSummary }> {
+    const habits = await this.habitRepository.getActive();
+    const history = await this.habitHistoryRepository.getForRange(start, end);
+    const days = isoRange(dayjs(start), dayjs(end));
+    const reminderHour = (h: Habit) => (h.reminderTime ? Number(h.reminderTime.split(':')[0]) : null);
+    const morningHabits = habits.filter((h) => {
+      const hour = reminderHour(h);
+      return hour !== null && hour < 12;
+    });
+    const eveningHabits = habits.filter((h) => {
+      const hour = reminderHour(h);
+      return hour !== null && hour >= 17;
+    });
+
+    const rateFor = (group: Habit[]): CompletionSummary => {
+      let scheduled = 0;
+      let completed = 0;
+      for (const date of days) {
+        const weekday = dayjs(date).day() as WeekDay;
+        const scheduledHabits = group.filter((h) => h.schedule.includes(weekday) && h.createdAt.slice(0, 10) <= date);
+        scheduled += scheduledHabits.length;
+        for (const habit of scheduledHabits) {
+          if (history.find((h) => h.habitId === habit.id && h.date === date)?.completed) completed++;
+        }
+      }
+      return summaryOf(scheduled, completed);
+    };
+
+    return { morning: rateFor(morningHabits), evening: rateFor(eveningHabits) };
+  }
+
+  /** Average focus-session duration bucketed into 2-hour blocks of the day, to find when focus runs longest. */
+  async focusAverageDurationByBlock(
+    start: IsoDate,
+    end: IsoDate,
+  ): Promise<{ blockStartHour: number; avgSeconds: number; count: number }[]> {
+    const sessions = await this.focusSessionRepository.getForRange(start, end);
+    const buckets = new Map<number, { total: number; count: number }>();
+    for (const session of sessions) {
+      const blockStartHour = Math.floor(dayjs(session.startedAt).hour() / 2) * 2;
+      const bucket = buckets.get(blockStartHour) ?? { total: 0, count: 0 };
+      bucket.total += session.durationSeconds;
+      bucket.count += 1;
+      buckets.set(blockStartHour, bucket);
+    }
+    return Array.from({ length: 12 }, (_, i) => {
+      const blockStartHour = i * 2;
+      const bucket = buckets.get(blockStartHour);
+      return { blockStartHour, avgSeconds: bucket ? bucket.total / bucket.count : 0, count: bucket?.count ?? 0 };
+    });
+  }
+
+  /** Combined habit+prayer completion rate for the current month vs the previous one. */
+  async monthOverMonthDelta(referenceDate = new Date()): Promise<{ currentRate: number; previousRate: number } | null> {
+    const year = referenceDate.getFullYear();
+    const month = referenceDate.getMonth() + 1;
+    const previous = dayjs(new Date(year, month - 1, 1)).subtract(1, 'month');
+
+    const [current, previousMonth] = await Promise.all([
+      this.monthlyCompletion(year, month),
+      this.monthlyCompletion(previous.year(), previous.month() + 1),
+    ]);
+
+    const currentTotal = current.habit.totalScheduled + current.prayer.totalScheduled;
+    const previousTotal = previousMonth.habit.totalScheduled + previousMonth.prayer.totalScheduled;
+    if (currentTotal === 0 || previousTotal === 0) return null;
+
+    const currentRate = Math.round(((current.habit.totalCompleted + current.prayer.totalCompleted) / currentTotal) * 100);
+    const previousRate = Math.round(
+      ((previousMonth.habit.totalCompleted + previousMonth.prayer.totalCompleted) / previousTotal) * 100,
+    );
+    return { currentRate, previousRate };
   }
 }

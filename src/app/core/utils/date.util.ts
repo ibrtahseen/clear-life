@@ -36,6 +36,14 @@ export function formatTime(isoTimeOrHHmm: string, use24h = false): string {
   return parsed.format(use24h ? 'HH:mm' : 'h:mm A');
 }
 
+/** "Xh Ym" (or "Ym" alone) for an elapsed duration given in seconds. */
+export function formatDuration(totalSeconds: number): string {
+  const totalMinutes = Math.round(totalSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+}
+
 /** "Xh Ym" (or "Ym" alone) until the next occurrence of a "HH:mm" time, relative to `now`. */
 export function countdownToTime(time: string, now: number): string {
   const [h, m] = time.split(':').map(Number);

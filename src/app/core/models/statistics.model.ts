@@ -40,3 +40,14 @@ export interface MonthlyStatisticsSnapshot {
   categoryBreakdown: CategoryCompletion[];
   createdAt: string;
 }
+
+export type InsightTone = 'positive' | 'negative' | 'neutral';
+
+export type InsightKind = 'bestWeekday' | 'focusWindow' | 'timeOfDayGap' | 'monthComparison' | 'bestHabit';
+
+/** A generated, narrative observation about the user's data — the raw facts, not the sentence itself. */
+export interface Insight {
+  kind: InsightKind;
+  tone: InsightTone;
+  params: Record<string, string | number>;
+}

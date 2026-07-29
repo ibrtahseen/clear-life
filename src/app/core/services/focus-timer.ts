@@ -1,12 +1,21 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { FocusCountdownRepository } from '../data/repositories/focus-countdown-repository';
+import { FocusSessionRepository } from '../data/repositories/focus-session-repository';
 import { Notification } from './notification';
 import { I18n } from './i18n';
-import { ActiveFocusSession, FocusCountdown, FocusPhase, MAX_FOCUS_COUNTDOWNS } from '../models/focus.model';
+import {
+  ActiveFocusSession,
+  FocusCountdown,
+  FocusPhase,
+  MAX_FOCUS_COUNTDOWNS,
+  MIN_RECORDED_FOCUS_SECONDS,
+} from '../models/focus.model';
+import { toIsoDate } from '../utils/date.util';
 
 @Service()
 export class FocusTimer {
   private readonly repository = inject(FocusCountdownRepository);
+  private readonly sessionRepository = inject(FocusSessionRepository);
   private readonly notification = inject(Notification);
   private readonly i18n = inject(I18n);
 
@@ -50,8 +59,9 @@ export class FocusTimer {
   }
 
   stop(): void {
-    this.active.set(null);
-    this.stopTicking();
+    const active = this.active();
+    if (active) void this.recordSession(active, Date.now());
+    this.endActive();
   }
 
   isRunning(id: number): boolean {
@@ -60,9 +70,31 @@ export class FocusTimer {
 
   private startPhase(countdown: FocusCountdown, phase: FocusPhase): void {
     const minutes = phase === 'focus' ? countdown.focusMinutes : countdown.breakMinutes;
-    this.active.set({ countdownId: countdown.id!, phase, endsAt: Date.now() + minutes * 60_000 });
-    this.now.set(Date.now());
+    const startedAt = Date.now();
+    this.active.set({ countdownId: countdown.id!, phase, startedAt, endsAt: startedAt + minutes * 60_000 });
+    this.now.set(startedAt);
     this.startTicking();
+  }
+
+  private endActive(): void {
+    this.active.set(null);
+    this.stopTicking();
+  }
+
+  /** Persists elapsed focus time; a no-op for break phases or sessions too short to matter. */
+  private async recordSession(active: ActiveFocusSession, endedAt: number): Promise<void> {
+    if (active.phase !== 'focus') return;
+    const durationSeconds = Math.round((endedAt - active.startedAt) / 1000);
+    if (durationSeconds < MIN_RECORDED_FOCUS_SECONDS) return;
+    const countdown = this.countdowns().find((c) => c.id === active.countdownId);
+    await this.sessionRepository.create({
+      countdownId: active.countdownId,
+      countdownName: countdown?.name ?? '',
+      date: toIsoDate(new Date(active.startedAt)),
+      durationSeconds,
+      startedAt: new Date(active.startedAt).toISOString(),
+      endedAt: new Date(endedAt).toISOString(),
+    });
   }
 
   private startTicking(): void {
@@ -88,20 +120,21 @@ export class FocusTimer {
   private async onPhaseComplete(active: ActiveFocusSession): Promise<void> {
     const countdown = this.countdowns().find((c) => c.id === active.countdownId);
     if (!countdown) {
-      this.stop();
+      this.endActive();
       return;
     }
 
     if (active.phase === 'focus') {
+      await this.recordSession(active, active.endsAt);
       await this.notify(countdown, 'focus-done');
       if (countdown.breakMinutes > 0) {
         this.startPhase(countdown, 'break');
       } else {
-        this.stop();
+        this.endActive();
       }
     } else {
       await this.notify(countdown, 'break-done');
-      this.stop();
+      this.endActive();
     }
   }
 
