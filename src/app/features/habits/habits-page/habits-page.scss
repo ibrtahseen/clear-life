@@ -53,13 +53,6 @@
   cursor: pointer;
   font: inherit;
 
-  &--all {
-    min-width: auto;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
   &--today {
     border-color: var(--mat-sys-primary);
   }
@@ -212,6 +205,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     unicode-bidi: plaintext;
+  }
+}
+
+.habits__meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.habits__reminder {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  opacity: 0.65;
+
+  .mat-icon {
+    font-size: 0.9rem;
+    width: 0.9rem;
+    height: 0.9rem;
   }
 }
 

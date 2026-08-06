@@ -5,7 +5,6 @@ import { HabitRepository } from '../data/repositories/habit-repository';
 import { HabitHistoryRepository } from '../data/repositories/habit-history-repository';
 import { PrayerHistoryRepository } from '../data/repositories/prayer-history-repository';
 import { QuranRepository } from '../data/repositories/quran-repository';
-import { StatisticsRepository } from '../data/repositories/statistics-repository';
 import { NotificationRepository } from '../data/repositories/notification-repository';
 import { CalendarRepository } from '../data/repositories/calendar-repository';
 import { AppStateRepository } from '../data/repositories/app-state-repository';
@@ -24,7 +23,6 @@ export class Backup {
   private readonly habitHistoryRepository = inject(HabitHistoryRepository);
   private readonly prayerHistoryRepository = inject(PrayerHistoryRepository);
   private readonly quranRepository = inject(QuranRepository);
-  private readonly statisticsRepository = inject(StatisticsRepository);
   private readonly notificationRepository = inject(NotificationRepository);
   private readonly calendarRepository = inject(CalendarRepository);
   private readonly appStateRepository = inject(AppStateRepository);
@@ -39,8 +37,6 @@ export class Backup {
       prayerHistory,
       quranProgress,
       quranReadingLog,
-      weeklyStatistics,
-      monthlyStatistics,
       notifications,
       calendarNotes,
       appState,
@@ -53,8 +49,6 @@ export class Backup {
       this.prayerHistoryRepository.getAll(),
       this.quranRepository.getProgress(),
       this.quranRepository.getLog(),
-      this.statisticsRepository.getAllWeekly(),
-      this.statisticsRepository.getAllMonthly(),
       this.notificationRepository.getAll(),
       this.calendarRepository.getAll(),
       this.appStateRepository.get(),
@@ -73,8 +67,6 @@ export class Backup {
         prayerHistory,
         quranProgress,
         quranReadingLog,
-        weeklyStatistics,
-        monthlyStatistics,
         notifications,
         calendarNotes,
         appState,
@@ -141,7 +133,6 @@ export class Backup {
     }
   }
 
-  /** Destructive: wipes all local data and restores everything from the backup. */
   async restore(backup: ClearLifeBackup): Promise<void> {
     const migrated = this.migrate(backup);
     const { data } = migrated;
@@ -153,7 +144,6 @@ export class Backup {
       this.habitHistoryRepository.clear(),
       this.prayerHistoryRepository.clear(),
       this.quranRepository.clear(),
-      this.statisticsRepository.clear(),
       this.notificationRepository.clear(),
       this.calendarRepository.clear(),
       this.appStateRepository.clear(),
@@ -167,15 +157,13 @@ export class Backup {
     await this.prayerHistoryRepository.bulkPut(data.prayerHistory);
     if (data.quranProgress) await this.quranRepository.saveProgress(data.quranProgress);
     await this.quranRepository.bulkPutLog(data.quranReadingLog);
-    await this.statisticsRepository.bulkPutWeekly(data.weeklyStatistics);
-    await this.statisticsRepository.bulkPutMonthly(data.monthlyStatistics);
     await this.notificationRepository.bulkPut(data.notifications);
     await this.calendarRepository.bulkPut(data.calendarNotes);
-    if (data.appState) await this.appStateRepository.save({ ...data.appState, onboardingCompleted: true });
+    if (data.appState)
+      await this.appStateRepository.save({ ...data.appState, onboardingCompleted: true });
     await this.focusSessionRepository.bulkPut(data.focusSessions ?? []);
   }
 
-  /** Hook point for future schema migrations between backupVersion releases. */
   private migrate(backup: ClearLifeBackup): ClearLifeBackup {
     return backup;
   }

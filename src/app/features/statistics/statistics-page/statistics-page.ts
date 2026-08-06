@@ -6,18 +6,12 @@ import { BarController, BarElement, CategoryScale, LinearScale, Tooltip, type Ch
 import dayjs from 'dayjs';
 
 import { Statistics as StatisticsService } from '../../../core/services/statistics';
-import { Insights as InsightsService } from '../../../core/services/insights';
-import { Insight, InsightTone } from '../../../core/models/statistics.model';
-import { toIsoDate, formatDuration, formatTime } from '../../../core/utils/date.util';
+import { SettingsStore } from '../../../core/services/settings-store';
+import { Quran as QuranService } from '../../../core/services/quran';
+import { toIsoDate, formatDuration } from '../../../core/utils/date.util';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 const CHART_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899'];
-
-interface InsightViewModel {
-  icon: string;
-  tone: InsightTone;
-  text: string;
-}
 
 @Component({
   selector: 'app-statistics-page',
@@ -36,12 +30,25 @@ interface InsightViewModel {
 })
 export class StatisticsPage {
   private readonly statisticsService = inject(StatisticsService);
-  private readonly insightsService = inject(InsightsService);
+  private readonly settingsStore = inject(SettingsStore);
+  private readonly quranService = inject(QuranService);
   private readonly translate = inject(TranslateService);
 
   private readonly today = new Date();
   private readonly year = this.today.getFullYear();
   private readonly month = this.today.getMonth() + 1;
+
+  private readonly weeklyStatsResource = resource({
+    params: () => ({ firstDayOfWeek: this.settingsStore.settings().firstDayOfWeek }),
+    loader: ({ params }) => this.statisticsService.weeklyCompletion(new Date(), params.firstDayOfWeek),
+  });
+  readonly weeklyStats = this.weeklyStatsResource.value;
+
+  private readonly prayerStreakResource = resource({
+    params: () => ({}),
+    loader: () => this.statisticsService.prayerStreak(),
+  });
+  readonly prayerStreak = this.prayerStreakResource.value;
 
   private readonly statsResource = resource({
     params: () => ({}),
@@ -51,98 +58,22 @@ export class StatisticsPage {
       const focusChartStart = toIsoDate(dayjs().subtract(13, 'day'));
       const focusChartEnd = toIsoDate(dayjs());
 
-      const [quranPages, habitPerformance, focusByDay, monthlyFocus, insights] = await Promise.all([
+      const [quranPages, focusByDay, monthlyFocus] = await Promise.all([
         this.statisticsService.quranPagesRead(),
-        this.statisticsService.habitPerformance(monthStart, monthEnd),
         this.statisticsService.focusSecondsByDay(focusChartStart, focusChartEnd),
         this.statisticsService.focusSecondsByDay(monthStart, monthEnd),
-        this.insightsService.generate(),
       ]);
 
       const monthlyFocusSeconds = monthlyFocus.reduce((sum, d) => sum + d.seconds, 0);
 
       return {
         quranPages,
-        habitPerformance: habitPerformance.sort((a, b) => b.summary.rate - a.summary.rate),
         focusByDay,
         monthlyFocusSeconds,
-        insights,
       };
     },
   });
   readonly stats = this.statsResource.value;
-
-  readonly insightViewModels = computed<InsightViewModel[]>(() => {
-    const data = this.stats();
-    if (!data) return [];
-    return data.insights.map((insight) => this.toInsightViewModel(insight));
-  });
-
-  private toInsightViewModel(insight: Insight): InsightViewModel {
-    switch (insight.kind) {
-      case 'bestWeekday':
-        return {
-          icon: 'calendar_month',
-          tone: insight.tone,
-          text: this.translate.instant('statistics.insightBestWeekday', {
-            rate: insight.params['rate'],
-            day: this.translate.instant(`statistics.weekdayFull.${insight.params['day']}`),
-          }),
-        };
-      case 'focusWindow':
-        return {
-          icon: 'bolt',
-          tone: insight.tone,
-          text: this.translate.instant('statistics.insightFocusWindow', {
-            start: formatTime(`${insight.params['startHour']}:00`),
-            end: formatTime(`${insight.params['endHour']}:00`),
-          }),
-        };
-      case 'timeOfDayGap':
-        return {
-          icon: 'schedule',
-          tone: insight.tone,
-          text: this.translate.instant('statistics.insightTimeOfDayGap', {
-            worse: this.translate.instant(`statistics.timeSlot.${insight.params['worseSlot']}`),
-            better: this.translate.instant(`statistics.timeSlot.${insight.params['betterSlot']}`),
-          }),
-        };
-      case 'monthComparison':
-        return {
-          icon: insight.tone === 'positive' ? 'trending_up' : 'trending_down',
-          tone: insight.tone,
-          text: this.translate.instant(
-            insight.tone === 'positive' ? 'statistics.insightMonthImproved' : 'statistics.insightMonthDeclined',
-            { percent: insight.params['percent'] },
-          ),
-        };
-      case 'bestHabit':
-        return {
-          icon: 'military_tech',
-          tone: insight.tone,
-          text: this.translate.instant('statistics.insightBestHabit', {
-            title: insight.params['title'],
-            rate: insight.params['rate'],
-          }),
-        };
-    }
-  }
-
-  readonly habitPerformanceChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
-    const data = this.stats();
-    if (!data || data.habitPerformance.length === 0) return null;
-    return {
-      labels: data.habitPerformance.map((p) => p.habit.title),
-      datasets: [
-        {
-          label: this.translate.instant('statistics.habitPerformance'),
-          data: data.habitPerformance.map((p) => p.summary.rate),
-          backgroundColor: data.habitPerformance.map((p) => p.habit.color || CHART_COLORS[0]),
-          borderRadius: 6,
-        },
-      ],
-    };
-  });
 
   readonly focusChartData = computed<ChartConfiguration<'bar'>['data'] | null>(() => {
     const data = this.stats();
@@ -165,14 +96,6 @@ export class StatisticsPage {
     return data ? formatDuration(data.monthlyFocusSeconds) : '';
   });
 
-  readonly habitPerformanceOptions: ChartConfiguration['options'] = {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { x: { beginAtZero: true, max: 100 } },
-  };
-
   readonly focusChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
@@ -186,4 +109,8 @@ export class StatisticsPage {
     },
     scales: { y: { beginAtZero: true, ticks: { stepSize: 30 } } },
   };
+
+  quranRangeLabel(): string {
+    return this.quranService.currentRangeLabel();
+  }
 }

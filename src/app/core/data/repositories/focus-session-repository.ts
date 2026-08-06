@@ -23,7 +23,7 @@ export class FocusSessionRepository {
   }
 
   async create(entry: Omit<FocusSessionEntry, 'id'>): Promise<FocusSessionEntry> {
-    const id = await this.table.add(entry as FocusSessionEntry);
+    const id = await this.table.add(entry );
     return { ...entry, id };
   }
 

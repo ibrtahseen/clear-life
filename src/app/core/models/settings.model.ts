@@ -3,12 +3,10 @@ import { GeoLocation, Language, ThemeMode, WeekDay } from './common.model';
 export interface NotificationSettings {
   prayerRemindersEnabled: boolean;
   habitRemindersEnabled: boolean;
-  /** Minutes before each habit's reminder time to notify */
   reminderLeadMinutes: number;
 }
 
 export interface AppSettings {
-  /** Singleton row id, always 1 */
   id: number;
   language: Language;
   theme: ThemeMode;

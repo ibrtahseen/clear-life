@@ -9,8 +9,18 @@ h1 {
   font-size: 1.4rem;
 }
 
-.statistics__insights {
+.statistics__overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
   margin-bottom: 1.25rem;
+}
+
+.statistics__overview-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  border: 1px solid var(--mat-sys-outline-variant);
 
   h2 {
     margin: 0 0 0.75rem;
@@ -18,39 +28,44 @@ h1 {
   }
 }
 
-.statistics__insight-list {
+.statistics__overview-stat-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 0.35rem 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+  }
 }
 
-.statistics__insight-card {
+.statistics__overview-streak {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-inline-start: 3px solid var(--mat-sys-primary);
+  align-items: baseline;
+  gap: 0.5rem;
+}
 
-  p {
-    margin: 0;
-    font-size: 0.88rem;
-  }
+.statistics__overview-streak-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+}
 
-  mat-icon {
-    flex-shrink: 0;
-    color: var(--mat-sys-primary);
-  }
+.statistics__overview-streak-label {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
 
-  &--negative {
-    border-inline-start-color: var(--mat-sys-error);
+.statistics__overview-quran-page {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+  margin: 0 0 0.2rem;
+}
 
-    mat-icon {
-      color: var(--mat-sys-error);
-    }
-  }
+.statistics__overview-quran-label {
+  font-size: 0.8rem;
+  opacity: 0.65;
 }
 
 .statistics__stat-grid {

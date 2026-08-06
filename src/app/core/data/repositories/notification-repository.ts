@@ -14,7 +14,7 @@ export class NotificationRepository {
   }
 
   async add(entry: Omit<NotificationLogEntry, 'id'>): Promise<NotificationLogEntry> {
-    const id = await this.table.add(entry as NotificationLogEntry);
+    const id = await this.table.add(entry);
     return { ...entry, id };
   }
 

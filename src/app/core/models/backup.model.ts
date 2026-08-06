@@ -3,7 +3,6 @@ import { AppSettings } from './settings.model';
 import { Habit, HabitHistoryEntry } from './habit.model';
 import { PrayerHistoryEntry } from './prayer.model';
 import { QuranProgressState, QuranReadingLogEntry } from './quran.model';
-import { WeeklyStatisticsSnapshot, MonthlyStatisticsSnapshot } from './statistics.model';
 import { NotificationLogEntry, CalendarNote, AppState } from './notification.model';
 import { FocusSessionEntry } from './focus.model';
 
@@ -21,8 +20,6 @@ export interface ClearLifeBackup {
     prayerHistory: PrayerHistoryEntry[];
     quranProgress: QuranProgressState | null;
     quranReadingLog: QuranReadingLogEntry[];
-    weeklyStatistics: WeeklyStatisticsSnapshot[];
-    monthlyStatistics: MonthlyStatisticsSnapshot[];
     notifications: NotificationLogEntry[];
     calendarNotes: CalendarNote[];
     appState: AppState | null;

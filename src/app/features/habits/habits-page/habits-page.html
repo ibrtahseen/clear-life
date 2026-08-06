@@ -13,7 +13,7 @@
           inventory_2
         </mat-icon>
       </button>
-      @if (viewMode() === 'day' && displayedHabits().length > 1) {
+      @if (displayedHabits().length > 1) {
         <button
           mat-icon-button
           type="button"
@@ -34,19 +34,11 @@
   </header>
 
   <div class="habits__day-strip">
-    <button
-      type="button"
-      class="habits__day-btn habits__day-btn--all"
-      [class.habits__day-btn--active]="viewMode() === 'all'"
-      (click)="selectAll()"
-    >
-      {{ 'habits.all' | translate }}
-    </button>
     @for (date of weekDates(); track date) {
       <button
         type="button"
         class="habits__day-btn"
-        [class.habits__day-btn--active]="viewMode() === 'day' && selectedDate() === date"
+        [class.habits__day-btn--active]="selectedDate() === date"
         [class.habits__day-btn--today]="date === todayIsoDate()"
         (click)="selectDay(date)"
       >
@@ -103,26 +95,32 @@
             <div class="habits__info">
               <div class="habits__title-row">
                 <h3>{{ habit.title }}</h3>
+              </div>
+              <div class="habits__meta-row">
+                @if (habit.reminderTime) {
+                  <span class="habits__reminder">
+                    <mat-icon>schedule</mat-icon>
+                    {{ formattedReminderTime(habit.reminderTime) }}
+                  </span>
+                }
                 <span class="habits__category-tag">{{ categoryLabel(habit) }}</span>
               </div>
             </div>
 
             @if (!reorderMode()) {
               <div class="habits__actions">
-                @if (viewMode() === 'day') {
-                  <button
-                    type="button"
-                    class="habits__toggle"
-                    [class.habits__toggle--done]="isCompletedSelected(habit)"
-                    [disabled]="!isSelectedToday()"
-                    [attr.aria-label]="'habits.toggleToday' | translate"
-                    (click)="toggle(habit)"
-                  >
-                    @if (isCompletedSelected(habit)) {
-                      <mat-icon>check</mat-icon>
-                    }
-                  </button>
-                }
+                <button
+                  type="button"
+                  class="habits__toggle"
+                  [class.habits__toggle--done]="isCompletedSelected(habit)"
+                  [disabled]="!isSelectedToday()"
+                  [attr.aria-label]="'habits.toggleToday' | translate"
+                  (click)="toggle(habit)"
+                >
+                  @if (isCompletedSelected(habit)) {
+                    <mat-icon>check</mat-icon>
+                  }
+                </button>
                 <button
                   mat-icon-button
                   type="button"

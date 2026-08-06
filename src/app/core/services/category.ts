@@ -26,7 +26,6 @@ export class Category {
     this.categories.update((list) => list.filter((c) => c.id !== id));
   }
 
-  /** Display label for a habit's category — the custom category's name, or the translated preset label. */
   labelFor(habit: Habit): string {
     if (habit.category === 'custom' && habit.customCategoryId != null) {
       const custom = this.categories().find((c) => c.id === habit.customCategoryId);

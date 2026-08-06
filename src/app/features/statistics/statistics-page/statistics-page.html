@@ -1,23 +1,41 @@
 <div class="statistics">
   <h1>{{ 'statistics.title' | translate }}</h1>
 
-  @if (stats(); as data) {
-    <section class="statistics__insights">
-      <h2>{{ 'statistics.insightsTitle' | translate }}</h2>
-      @if (insightViewModels().length === 0) {
-        <app-empty-state>{{ 'statistics.noInsights' | translate }}</app-empty-state>
+  <div class="statistics__overview-grid">
+    <section class="statistics__overview-card">
+      <h2>{{ 'dashboard.weeklyCompletion' | translate }}</h2>
+      @if (weeklyStats(); as stats) {
+        <div class="statistics__overview-stat-row">
+          <span>{{ 'habits.title' | translate }}</span>
+          <span>{{ stats.habit.rate }}%</span>
+        </div>
+        <div class="statistics__overview-stat-row">
+          <span>{{ 'prayers.title' | translate }}</span>
+          <span>{{ stats.prayer.rate }}%</span>
+        </div>
       } @else {
-        <div class="statistics__insight-list">
-          @for (insight of insightViewModels(); track insight.text) {
-            <div class="statistics__insight-card" [class]="'statistics__insight-card--' + insight.tone">
-              <mat-icon>{{ insight.icon }}</mat-icon>
-              <p>{{ insight.text }}</p>
-            </div>
-          }
+        <app-empty-state variant="inline">{{ 'common.loading' | translate }}</app-empty-state>
+      }
+    </section>
+
+    <section class="statistics__overview-card">
+      <h2>{{ 'dashboard.currentStreak' | translate }}</h2>
+      @if (prayerStreak(); as streak) {
+        <div class="statistics__overview-streak">
+          <span class="statistics__overview-streak-value">{{ streak.current }}</span>
+          <span class="statistics__overview-streak-label">{{ 'dashboard.dayStreak' | translate }}</span>
         </div>
       }
     </section>
 
+    <section class="statistics__overview-card">
+      <h2>{{ 'dashboard.quranProgress' | translate }}</h2>
+      <p class="statistics__overview-quran-page">{{ quranRangeLabel() }}</p>
+      <span class="statistics__overview-quran-label">{{ 'prayers.currentPage' | translate }}</span>
+    </section>
+  </div>
+
+  @if (stats(); as data) {
     <div class="statistics__stat-grid">
       <div class="statistics__stat-card">
         <span class="statistics__stat-value">{{ data.quranPages }}</span>
@@ -28,17 +46,6 @@
         <span class="statistics__stat-label">{{ 'statistics.totalFocusTime' | translate }}</span>
       </div>
     </div>
-
-    <section class="statistics__chart-card statistics__chart-card--wide">
-      <h2>{{ 'statistics.habitPerformance' | translate }}</h2>
-      <div class="statistics__chart-wrap" [style.height.px]="data.habitPerformance.length * 34 + 40">
-        @if (habitPerformanceChartData(); as chartData) {
-          <canvas baseChart [type]="'bar'" [data]="chartData" [options]="habitPerformanceOptions"></canvas>
-        } @else {
-          <app-empty-state>{{ 'statistics.noData' | translate }}</app-empty-state>
-        }
-      </div>
-    </section>
 
     <section class="statistics__chart-card statistics__chart-card--wide">
       <h2>{{ 'statistics.focusTimeTrend' | translate }}</h2>

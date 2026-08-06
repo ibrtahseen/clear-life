@@ -25,8 +25,9 @@ export class HabitRepository {
   async create(habit: Omit<Habit, 'id' | 'createdAt' | 'updatedAt' | 'order'>): Promise<Habit> {
     const now = new Date().toISOString();
     const maxOrder = await this.getMaxOrder();
-    const id = await this.table.add({ ...habit, order: maxOrder + 1, createdAt: now, updatedAt: now } as Habit);
-    return (await this.table.get(id))!;
+    const toSave = { ...habit, order: maxOrder + 1, createdAt: now, updatedAt: now } as Habit;
+    const id = await this.table.add(toSave);
+    return { ...toSave, id };
   }
 
   async update(id: number, changes: Partial<Habit>): Promise<void> {
@@ -45,7 +46,6 @@ export class HabitRepository {
     await this.table.delete(id);
   }
 
-  /** Persists a new display order matching the given id sequence (index 0 sorts first). */
   async reorder(habitIds: number[]): Promise<void> {
     await this.databaseService.db.transaction('rw', this.table, async () => {
       await Promise.all(habitIds.map((id, index) => this.table.update(id, { order: index })));

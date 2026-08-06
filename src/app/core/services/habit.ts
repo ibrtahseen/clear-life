@@ -73,7 +73,6 @@ export class Habit {
     await this.reloadHabits();
   }
 
-  /** Removes the habit definition only; history rows are preserved per spec ("history never deleted"). */
   async delete(id: number): Promise<void> {
     await this.habitRepository.delete(id);
     await this.reloadHabits();
@@ -91,12 +90,10 @@ export class Habit {
     this.todayHistory.set(updated);
   }
 
-  /** History entries for an arbitrary date, for the per-day habits view. */
   async historyForDate(date: IsoDate): Promise<HabitHistoryEntry[]> {
     return this.habitHistoryRepository.getForDate(date);
   }
 
-  /** Toggles completion for an arbitrary date; keeps `todayHistory` in sync if that date is today. */
   async toggleForDate(habitId: number, date: IsoDate, wasCompleted: boolean): Promise<HabitHistoryEntry> {
     const entry = await this.habitHistoryRepository.setCompletion(habitId, date, !wasCompleted);
     if (date === todayIso()) {
@@ -107,7 +104,6 @@ export class Habit {
     return entry;
   }
 
-  /** Persists a new drag-and-drop display order for active habits (index 0 sorts first). */
   async reorder(habitIds: number[]): Promise<void> {
     const orderIndex = new Map(habitIds.map((id, index) => [id, index]));
     this.habits.update((list) =>

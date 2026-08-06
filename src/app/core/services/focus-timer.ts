@@ -20,7 +20,6 @@ export class FocusTimer {
   private readonly i18n = inject(I18n);
 
   readonly countdowns = signal<FocusCountdown[]>([]);
-  /** In-memory only — resets if the app reloads mid-run; no run history is kept. */
   readonly active = signal<ActiveFocusSession | null>(null);
   readonly now = signal(Date.now());
 

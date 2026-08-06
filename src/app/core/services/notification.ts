@@ -10,12 +10,6 @@ import { formatTime, minutesSinceMidnight, parseHHmmToMinutes } from '../utils/d
 
 export type NotificationPermissionState = 'default' | 'granted' | 'denied' | 'unsupported';
 
-/**
- * Foreground reminder scheduler using the Web Notifications API. Without a
- * push server, notifications can only fire while this tab/PWA instance is
- * running (checked every minute) — there is no way to wake a fully closed
- * PWA without a backend push service, which this offline-first app does not have.
- */
 @Service()
 export class Notification {
   private readonly userStore = inject(UserStore);

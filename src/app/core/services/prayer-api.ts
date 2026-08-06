@@ -15,7 +15,6 @@ export interface PrayerApiQuery {
   timezone?: string;
 }
 
-/** Raw times keyed loosely, since providers vary casing/naming (Fajr vs fajr). */
 type RawTimings = Record<string, string>;
 
 function extractTimings(payload: unknown): RawTimings | null {

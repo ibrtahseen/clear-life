@@ -194,7 +194,14 @@ export class Statistics {
       const completedPrayers = completedPrayersByDate.get(date) ?? 0;
       const totalScheduled = scheduledHabits.length + PRAYER_NAMES.length;
       const totalCompleted = completedHabits + completedPrayers;
-      return { date, rate: totalScheduled === 0 ? 0 : Math.round((totalCompleted / totalScheduled) * 100) };
+      return {
+        date,
+        rate: totalScheduled === 0 ? 0 : Math.round((totalCompleted / totalScheduled) * 100),
+        habitTotal: scheduledHabits.length,
+        habitCompleted: completedHabits,
+        prayerTotal: PRAYER_NAMES.length,
+        prayerCompleted: completedPrayers,
+      };
     });
   }
 

@@ -15,8 +15,9 @@ export class CategoryRepository {
 
   async create(category: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>): Promise<Category> {
     const now = new Date().toISOString();
-    const id = await this.table.add({ ...category, createdAt: now, updatedAt: now } as Category);
-    return (await this.table.get(id))!;
+    const toSave = { ...category, createdAt: now, updatedAt: now };
+    const id = await this.table.add(toSave);
+    return { ...toSave, id };
   }
 
   async delete(id: number): Promise<void> {

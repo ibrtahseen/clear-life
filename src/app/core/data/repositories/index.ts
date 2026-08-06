@@ -4,7 +4,6 @@ export * from './habit-repository';
 export * from './habit-history-repository';
 export * from './prayer-history-repository';
 export * from './quran-repository';
-export * from './statistics-repository';
 export * from './notification-repository';
 export * from './calendar-repository';
 export * from './app-state-repository';

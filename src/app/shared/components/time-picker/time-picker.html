@@ -6,12 +6,11 @@
 
         <select
           class="time-picker__select time-picker__select--hour"
-          [value]="hour12()"
           (change)="setHour(+$any($event.target).value)"
           [attr.aria-label]="'timePicker.hour' | translate"
         >
           @for (h of hours; track h) {
-            <option [value]="h">{{ h }}</option>
+            <option [value]="h" [selected]="h === hour12()">{{ h }}</option>
           }
         </select>
 
@@ -19,12 +18,11 @@
 
         <select
           class="time-picker__select time-picker__select--minute"
-          [value]="minute()"
           (change)="setMinute(+$any($event.target).value)"
           [attr.aria-label]="'timePicker.minute' | translate"
         >
           @for (m of minutes; track m) {
-            <option [value]="m">{{ m < 10 ? '0' + m : m }}</option>
+            <option [value]="m" [selected]="m === minute()">{{ m < 10 ? '0' + m : m }}</option>
           }
         </select>
       </div>

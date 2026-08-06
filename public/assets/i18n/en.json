@@ -72,7 +72,6 @@
   },
   "habits": {
     "title": "Habits",
-    "all": "All",
     "add": "Add Habit",
     "empty": "No habits yet. Add your first one to get started.",
     "addTitle": "New Habit",
@@ -186,6 +185,11 @@
       "morning": "morning",
       "evening": "evening"
     }
+  },
+  "calendar": {
+    "thisWeek": "This week",
+    "habitsTooltip": "Habits: {{completed}}/{{total}}",
+    "prayersTooltip": "Prayers: {{completed}}/{{total}}"
   },
   "notifications": {
     "prayerReminder": "It's time for {{prayer}} prayer.",

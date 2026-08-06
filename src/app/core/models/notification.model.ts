@@ -18,7 +18,6 @@ export interface CalendarNote {
 }
 
 export interface AppState {
-  /** Singleton row id, always 1 */
   id: number;
   onboardingCompleted: boolean;
   schemaVersion: number;

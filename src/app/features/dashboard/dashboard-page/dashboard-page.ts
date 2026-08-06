@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, resource } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -7,14 +7,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 
 import { UserStore } from '../../../core/services/user-store';
-import { SettingsStore } from '../../../core/services/settings-store';
 import { Prayer as PrayerService } from '../../../core/services/prayer';
 import { Habit as HabitService } from '../../../core/services/habit';
 import { Quran as QuranService } from '../../../core/services/quran';
-import { Statistics as StatisticsService } from '../../../core/services/statistics';
 import { Clock } from '../../../core/services/clock';
 import { PRAYER_NAMES, PrayerName } from '../../../core/models/prayer.model';
-import { formatHijri } from '../../../core/utils/hijri.util';
 import { formatTime, minutesSinceMidnight, parseHHmmToMinutes, todayIso } from '../../../core/utils/date.util';
 import {
   QuranReaderDialog,
@@ -30,18 +27,15 @@ import {
 })
 export class DashboardPage {
   private readonly userStore = inject(UserStore);
-  private readonly settingsStore = inject(SettingsStore);
   private readonly prayerService = inject(PrayerService);
   private readonly habitService = inject(HabitService);
   private readonly quranService = inject(QuranService);
-  private readonly statisticsService = inject(StatisticsService);
   private readonly clock = inject(Clock);
   private readonly dialog = inject(MatDialog);
 
   readonly prayerNames = PRAYER_NAMES;
   readonly userName = computed(() => this.userStore.profile()?.name ?? '');
   readonly today = computed(() => new Date(this.clock.now()));
-  readonly hijriDate = computed(() => formatHijri(this.today(), this.settingsStore.settings().language));
 
   readonly greetingKey = computed(() => {
     const hour = this.today().getHours();
@@ -58,8 +52,6 @@ export class DashboardPage {
   readonly todaysHabits = this.habitService.todaysHabits;
   readonly habitCompletionMap = this.habitService.completionMap;
 
-  readonly quranProgress = this.quranService.progress;
-
   readonly upcomingReminders = computed(() => {
     const nowMinutes = minutesSinceMidnight(this.today());
     return this.todaysHabits()
@@ -67,18 +59,6 @@ export class DashboardPage {
       .filter((h) => parseHHmmToMinutes(h.reminderTime!) >= nowMinutes)
       .sort((a, b) => a.reminderTime!.localeCompare(b.reminderTime!));
   });
-
-  private readonly weeklyStatsResource = resource({
-    params: () => ({ firstDayOfWeek: this.settingsStore.settings().firstDayOfWeek }),
-    loader: ({ params }) => this.statisticsService.weeklyCompletion(new Date(), params.firstDayOfWeek),
-  });
-  readonly weeklyStats = this.weeklyStatsResource.value;
-
-  private readonly prayerStreakResource = resource({
-    params: () => ({}),
-    loader: () => this.statisticsService.prayerStreak(),
-  });
-  readonly prayerStreak = this.prayerStreakResource.value;
 
   constructor() {
     void this.prayerService.loadToday();
@@ -127,9 +107,5 @@ export class DashboardPage {
 
   formattedTime(time: string): string {
     return formatTime(time);
-  }
-
-  quranRangeLabel(): string {
-    return this.quranService.currentRangeLabel();
   }
 }

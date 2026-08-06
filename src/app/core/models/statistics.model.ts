@@ -19,33 +19,16 @@ export interface StreakInfo {
 export interface HeatmapDay {
   date: IsoDate;
   rate: number;
-}
-
-export interface WeeklyStatisticsSnapshot {
-  id?: number;
-  weekStart: IsoDate;
-  weekEnd: IsoDate;
-  habitCompletion: CompletionSummary;
-  prayerCompletion: CompletionSummary;
-  categoryBreakdown: CategoryCompletion[];
-  createdAt: string;
-}
-
-export interface MonthlyStatisticsSnapshot {
-  id?: number;
-  month: number;
-  year: number;
-  habitCompletion: CompletionSummary;
-  prayerCompletion: CompletionSummary;
-  categoryBreakdown: CategoryCompletion[];
-  createdAt: string;
+  habitTotal: number;
+  habitCompleted: number;
+  prayerTotal: number;
+  prayerCompleted: number;
 }
 
 export type InsightTone = 'positive' | 'negative' | 'neutral';
 
 export type InsightKind = 'bestWeekday' | 'focusWindow' | 'timeOfDayGap' | 'monthComparison' | 'bestHabit';
 
-/** A generated, narrative observation about the user's data — the raw facts, not the sentence itself. */
 export interface Insight {
   kind: InsightKind;
   tone: InsightTone;

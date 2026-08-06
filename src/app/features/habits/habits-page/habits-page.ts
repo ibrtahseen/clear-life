@@ -13,13 +13,11 @@ import { Habit as HabitModel, HabitHistoryEntry } from '../../../core/models/hab
 import { IsoDate, WeekDay } from '../../../core/models/common.model';
 import { SettingsStore } from '../../../core/services/settings-store';
 import { Clock } from '../../../core/services/clock';
-import { isoRange, startOfWeek, toIsoDate } from '../../../core/utils/date.util';
+import { formatTime, isoRange, startOfWeek, toIsoDate } from '../../../core/utils/date.util';
 import { Confirm } from '../../../shared/services/confirm';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { HabitFormDialog, HabitFormDialogData } from '../habit-form-dialog/habit-form-dialog';
 import { ArchivedHabitsDialog } from '../archived-habits-dialog/archived-habits-dialog';
-
-type ViewMode = 'all' | 'day';
 
 /** Horizontal drag distance (px) past which a card release triggers archive. */
 const SWIPE_ARCHIVE_THRESHOLD = 90;
@@ -44,7 +42,6 @@ export class HabitsPage {
   readonly archivedCount = computed(() => this.habitService.archivedHabits().length);
 
   readonly todayIsoDate = computed(() => toIsoDate(new Date(this.clock.now())));
-  readonly viewMode = signal<ViewMode>('day');
   readonly selectedDate = signal<IsoDate>(this.todayIsoDate());
   private readonly selectedHistory = signal<HabitHistoryEntry[]>([]);
 
@@ -74,14 +71,10 @@ export class HabitsPage {
   });
 
   /**
-   * Habits shown for the current view: the full active list in "all" mode, or
-   * just the habits scheduled on the selected weekday — with completed ones
-   * sorted to the end so it's obvious what's next.
+   * Habits scheduled on the selected weekday, with completed ones sorted to
+   * the end so it's obvious what's next.
    */
   readonly displayedHabits = computed(() => {
-    if (this.viewMode() === 'all') {
-      return this.habits();
-    }
     const weekday = this.selectedWeekday();
     const map = this.selectedCompletionMap();
     return this.habits()
@@ -105,15 +98,9 @@ export class HabitsPage {
   }
 
   selectDay(date: IsoDate): void {
-    this.viewMode.set('day');
     this.selectedDate.set(date);
     this.reorderMode.set(false);
     void this.loadHistory(date);
-  }
-
-  selectAll(): void {
-    this.viewMode.set('all');
-    this.reorderMode.set(false);
   }
 
   toggleReorderMode(): void {
@@ -134,7 +121,7 @@ export class HabitsPage {
 
   /** Completion can only be toggled for today — past/future days are view-only. */
   async toggle(habit: HabitModel): Promise<void> {
-    if (!habit.id || this.viewMode() !== 'day' || !this.isSelectedToday()) return;
+    if (!habit.id || !this.isSelectedToday()) return;
     const wasCompleted = this.selectedCompletionMap().get(habit.id) ?? false;
     const entry = await this.habitService.toggleForDate(habit.id, this.selectedDate(), wasCompleted);
     const updated = this.selectedHistory().filter((e) => e.habitId !== habit.id);
@@ -248,6 +235,10 @@ export class HabitsPage {
 
   categoryLabel(habit: HabitModel): string {
     return this.categoryService.labelFor(habit);
+  }
+
+  formattedReminderTime(time: string): string {
+    return formatTime(time);
   }
 
   openArchivedHabits(): void {

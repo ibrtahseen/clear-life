@@ -15,8 +15,9 @@ export class FocusCountdownRepository {
 
   async create(countdown: Omit<FocusCountdown, 'id' | 'createdAt' | 'updatedAt'>): Promise<FocusCountdown> {
     const now = new Date().toISOString();
-    const id = await this.table.add({ ...countdown, createdAt: now, updatedAt: now } as FocusCountdown);
-    return (await this.table.get(id))!;
+    const toSave = { ...countdown, createdAt: now, updatedAt: now };
+    const id = await this.table.add(toSave);
+    return { ...toSave, id };
   }
 
   async delete(id: number): Promise<void> {

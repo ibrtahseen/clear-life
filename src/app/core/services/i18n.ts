@@ -27,13 +27,6 @@ export class I18n {
     });
   }
 
-  /**
-   * Switches the app language, reloading the page if text direction changes.
-   * Angular Material's CDK `Directionality` service snapshots `dir` once at
-   * bootstrap and doesn't react to it changing later, so components created
-   * after a live LTR/RTL switch (e.g. dialogs, form fields) render with the
-   * wrong internal layout unless the app re-bootstraps.
-   */
   async setLanguage(lang: Language): Promise<void> {
     const directionChanged = this.isRtl() !== RTL_LANGUAGES.includes(lang);
     await this.settingsStore.update({ language: lang });

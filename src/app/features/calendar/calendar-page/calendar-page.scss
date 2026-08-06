@@ -18,12 +18,6 @@
     margin: 0;
     font-size: 1.2rem;
   }
-
-  p {
-    margin: 0.15rem 0 0;
-    font-size: 0.75rem;
-    opacity: 0.6;
-  }
 }
 
 .calendar__weekdays {
@@ -38,7 +32,56 @@
   }
 }
 
-.calendar__grid {
+.calendar__weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.calendar__week {
+  border-radius: 14px;
+  padding: 0.25rem;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &--active {
+    background: color-mix(in srgb, var(--mat-sys-primary) 6%, transparent);
+    border-color: var(--mat-sys-outline-variant);
+  }
+}
+
+.calendar__week-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.15rem 0.4rem;
+  margin-bottom: 0.2rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  font: inherit;
+  font-size: 0.7rem;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+.calendar__week-badge {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--mat-sys-primary);
+  background: color-mix(in srgb, var(--mat-sys-primary) 14%, transparent);
+}
+
+.calendar__week-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
@@ -75,17 +118,20 @@
   font-weight: 600;
 }
 
-.calendar__day-hijri {
-  font-size: 0.6rem;
-  opacity: 0.55;
+.calendar__day-dots {
+  display: flex;
+  gap: 0.2rem;
+  margin-top: 0.1rem;
 }
 
 .calendar__day-dot {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  margin-top: 0.1rem;
 
+  &.heat-none {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  }
   &.heat-0 {
     background: color-mix(in srgb, var(--mat-sys-on-surface) 15%, transparent);
   }

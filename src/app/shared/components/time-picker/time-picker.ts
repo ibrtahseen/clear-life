@@ -37,7 +37,15 @@ export class TimePicker {
     return h12 === 0 ? 12 : h12;
   });
 
-  readonly minute = computed(() => this.parsed()?.m ?? 0);
+  /**
+   * Snapped to the nearest 5-minute option offered by the picker — stored
+   * times that aren't on a 5-minute mark (legacy/imported data) would
+   * otherwise silently mismatch every `<option>` and show as blank.
+   */
+  readonly minute = computed(() => {
+    const m = this.parsed()?.m ?? 0;
+    return Math.round(m / 5) * 5 % 60;
+  });
 
   readonly period = computed<Period>(() => ((this.parsed()?.h ?? 9) < 12 ? 'AM' : 'PM'));
 

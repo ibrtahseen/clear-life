@@ -108,41 +108,6 @@
   text-decoration: none;
 }
 
-.dashboard__stat-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  padding: 0.35rem 0;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--mat-sys-outline-variant);
-  }
-}
-
-.dashboard__streak {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.dashboard__streak-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--mat-sys-primary);
-}
-
-.dashboard__streak-label {
-  font-size: 0.8rem;
-  opacity: 0.65;
-}
-
-.dashboard__quran-page {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--mat-sys-primary);
-  margin: 0;
-}
-
 .dashboard__reminder-row {
   display: flex;
   align-items: center;
@@ -155,7 +120,15 @@
   }
 }
 
+.dashboard__reminder-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .dashboard__reminder-time {
+  flex-shrink: 0;
   margin-inline-start: auto;
   opacity: 0.6;
 }
